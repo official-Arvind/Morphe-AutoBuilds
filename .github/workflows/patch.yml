@@ -415,7 +415,9 @@ jobs:
           echo "📦 Releasing $apk_count APK(s)..."
 
           # Build the asset list: APKs + optional manifest.json
+          shopt -s nullglob
           ASSETS=( ./release-apks/*.apk ./release-apks/*.zip )
+          shopt -u nullglob
           if [ -f ./release-apks/manifest.json ]; then
             ASSETS+=( ./release-apks/manifest.json )
             echo "📎 Including manifest.json"
@@ -464,10 +466,13 @@ jobs:
           echo "🔗 Release URL: $release_url"
           echo ""
           echo "📦 Direct Download Links:"
+          shopt -s nullglob
           for apk in ./release-apks/*.apk ./release-apks/*.zip; do
+            [ -f "$apk" ] || continue
             filename=$(basename "$apk")
             echo "- $filename: $release_url/download/$filename"
           done
+          shopt -u nullglob
 
   cleanup:
     name: Cleanup Workflow Runs

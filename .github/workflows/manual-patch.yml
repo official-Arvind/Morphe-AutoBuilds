@@ -163,9 +163,12 @@ jobs:
           fi
           
           # Add the new APK name(s) to the text file
+          shopt -s nullglob
           for apk in *.apk *.zip; do
+            [ -f "$apk" ] || continue
             echo "$apk" >> current_assets.txt
           done
+          shopt -u nullglob
           
           # 2. CREATE RELEASE NOTES
           cat > release_notes.md << EOF
@@ -210,7 +213,10 @@ jobs:
               echo "⚠️  cleanup_old_apks.py failed; continuing with clobber upload"
 
             # --clobber overwrites the file if it exists, adds it if it doesn't
-            gh release upload latest *.apk *.zip --clobber
+            shopt -s nullglob
+            ASSETS=( *.apk *.zip )
+            shopt -u nullglob
+            gh release upload latest "${ASSETS[@]}" --clobber
 
             echo "📝 Updating release title and notes..."
             gh release edit latest \
@@ -219,10 +225,13 @@ jobs:
               
           else
             echo "🚀 Creating new release..."
+            shopt -s nullglob
+            ASSETS=( *.apk *.zip )
+            shopt -u nullglob
             gh release create "latest" \
               --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
               --notes-file release_notes.md \
-              *.apk *.zip \
+              "${ASSETS[@]}" \
               --latest
           fi
           
@@ -237,9 +246,12 @@ jobs:
           echo "🔗 Updated Release URL: $release_url"
           echo ""
           echo "📦 Direct APK links:"
+          shopt -s nullglob
           for apk in *.apk *.zip; do
+            [ -f "$apk" ] || continue
             echo "  - $release_url/download/$apk"
           done
+          shopt -u nullglob
       
       - name: Cleanup Version Override
         if: ${{ inputs.version != '' && always() }}
