@@ -11,7 +11,7 @@ if [ -f "$STATE_FILE" ]; then
     sleep 10
     
     # Optional: Trigger an Android Toast Notification (requires an app or tricky command, fallback to log)
-    su -c "cmd notification post -t 'Morphe Manager' 'Flashing remaining modules...'" || true
+    cmd notification post -t 'Morphe Manager' 'Flashing remaining modules...' || true
     
     # Read the pending zip paths
     while IFS= read -r PENDING_ZIP; do
@@ -25,7 +25,7 @@ if [ -f "$STATE_FILE" ]; then
     rm -f "$STATE_FILE"
     
     # Reboot again cleanly
-    su -c svc power reboot
+    svc power reboot
     exit 0
 fi
 

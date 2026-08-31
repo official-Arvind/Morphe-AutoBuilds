@@ -17,11 +17,25 @@ if [ -z "$URLS" ]; then
     exit 1
 fi
 
+download_file() {
+    local FILE="$1"
+    local URL="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -L -s -o "$FILE" "$URL"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q -O "$FILE" "$URL"
+    elif command -v busybox >/dev/null 2>&1; then
+        busybox wget -q -O "$FILE" "$URL"
+    else
+        echo "ERROR: No curl or wget found"
+    fi
+}
+
 COUNTER=1
 for URL in $URLS; do
     FILEPATH="$TMP_DIR/module_${COUNTER}.zip"
     
-    curl -L -s -o "$FILEPATH" "$URL"
+    download_file "$FILEPATH" "$URL"
     
     if [ -f "$FILEPATH" ] && unzip -t "$FILEPATH" > /dev/null 2>&1; then
         echo "$FILEPATH" >> "$TMP_DIR/zip_list.txt"
@@ -53,7 +67,7 @@ if [ -f "$TMP_DIR/zip_list.txt" ]; then
     
     echo "SUCCESS"
     # Reboot in background so response reaches client
-    (sleep 2 && su -c svc power reboot) &
+    (sleep 2 && svc power reboot) &
     exit 0
 else
     echo "ERROR: No valid modules downloaded."

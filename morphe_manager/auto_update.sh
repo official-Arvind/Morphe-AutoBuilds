@@ -3,11 +3,23 @@ CONFIG_FILE="/data/adb/morphe_config.json"
 REPO="official-Arvind/Morphe-AutoBuilds"
 
 # Kill any existing instance of auto_update daemon (prevent duplicates)
-for pid in $(pgrep -f "morphe_manager/auto_update.sh"); do
+for pid in $(pgrep -f "auto_update.sh"); do
     if [ "$pid" != "$$" ]; then
-        kill -9 $pid
+        kill -9 $pid >/dev/null 2>&1
     fi
 done
+
+download_file() {
+    local FILE="$1"
+    local URL="$2"
+    if command -v curl >/dev/null 2>&1; then
+        curl -L -s -o "$FILE" "$URL"
+    elif command -v wget >/dev/null 2>&1; then
+        wget -q -O "$FILE" "$URL"
+    elif command -v busybox >/dev/null 2>&1; then
+        busybox wget -q -O "$FILE" "$URL"
+    fi
+}
 
 while true; do
     # Sleep 10 minutes between checks
@@ -39,39 +51,41 @@ while true; do
                     mkdir -p "$TMP_DIR"
                     
                     # Fetch latest release
-                    curl -s -o "$TMP_DIR/release.json" "https://api.github.com/repos/$REPO/releases/latest"
+                    download_file "$TMP_DIR/release.json" "https://api.github.com/repos/$REPO/releases/latest"
                     
-                    # Get all zip URLs (excluding manager itself)
-                    grep -o '"browser_download_url": "[^"]*\.zip"' "$TMP_DIR/release.json" | cut -d'"' -f4 | grep -v 'morphe-manager' > "$TMP_DIR/update_urls.txt"
-                    
-                    if [ -s "$TMP_DIR/update_urls.txt" ]; then
-                        COUNTER=1
-                        while IFS= read -r URL; do
-                            FILEPATH="$TMP_DIR/module_${COUNTER}.zip"
-                            curl -L -s -o "$FILEPATH" "$URL"
-                            if [ -f "$FILEPATH" ] && unzip -t "$FILEPATH" > /dev/null 2>&1; then
-                                echo "$FILEPATH" >> "$TMP_DIR/zip_list.txt"
-                            else
-                                rm -f "$FILEPATH"
-                            fi
-                            COUNTER=$((COUNTER+1))
-                        done < "$TMP_DIR/update_urls.txt"
+                    if [ -f "$TMP_DIR/release.json" ]; then
+                        # Get all zip URLs (excluding manager itself)
+                        grep -o '"browser_download_url": "[^"]*\.zip"' "$TMP_DIR/release.json" | cut -d'"' -f4 | grep -v 'morphe-manager' > "$TMP_DIR/update_urls.txt"
                         
-                        if [ -f "$TMP_DIR/zip_list.txt" ]; then
-                            STATE_FILE="/data/adb/morphe_state.txt"
-                            FIRST=true
-                            while IFS= read -r ZIP; do
-                                if $FIRST; then
-                                    magisk --install-module "$ZIP"
-                                    rm -f "$ZIP"
-                                    FIRST=false
+                        if [ -s "$TMP_DIR/update_urls.txt" ]; then
+                            COUNTER=1
+                            while IFS= read -r URL; do
+                                FILEPATH="$TMP_DIR/module_${COUNTER}.zip"
+                                download_file "$FILEPATH" "$URL"
+                                if [ -f "$FILEPATH" ] && unzip -t "$FILEPATH" > /dev/null 2>&1; then
+                                    echo "$FILEPATH" >> "$TMP_DIR/zip_list.txt"
                                 else
-                                    echo "$ZIP" >> "$STATE_FILE"
+                                    rm -f "$FILEPATH"
                                 fi
-                            done < "$TMP_DIR/zip_list.txt"
+                                COUNTER=$((COUNTER+1))
+                            done < "$TMP_DIR/update_urls.txt"
                             
-                            # Reboot system
-                            su -c svc power reboot &
+                            if [ -f "$TMP_DIR/zip_list.txt" ]; then
+                                STATE_FILE="/data/adb/morphe_state.txt"
+                                FIRST=true
+                                while IFS= read -r ZIP; do
+                                    if $FIRST; then
+                                        magisk --install-module "$ZIP"
+                                        rm -f "$ZIP"
+                                        FIRST=false
+                                    else
+                                        echo "$ZIP" >> "$STATE_FILE"
+                                    fi
+                                done < "$TMP_DIR/zip_list.txt"
+                                
+                                # Reboot system
+                                svc power reboot &
+                            fi
                         fi
                     fi
                     
