@@ -27,7 +27,7 @@ description=Systemless Morphe patched app for {app_name}
 
                 # Create customize.sh
         customize_sh = temp_path / "customize.sh"
-        customize_sh.write_text(f\"\"\"#!/system/bin/sh
+        customize_sh.write_text(f"""#!/system/bin/sh
 ui_print "- Installing Morphe Patched App"
 ui_print "- App: {app_name}"
 ui_print "- Author: Arvind Ji (The New Perfectionist)"
@@ -37,7 +37,7 @@ ui_print "- Placing patched app in system/app to override"
 mkdir -p $MODPATH/system/app/Morphe{app_name.replace(' ', '')}
 mv $MODPATH/custom_apk/app.apk $MODPATH/system/app/Morphe{app_name.replace(' ', '')}/app.apk
 rm -rf $MODPATH/custom_apk
-\"\"\")
+""")
         
         # Copy the APK to a custom dir so customize.sh can handle it
         app_dir = temp_path / "custom_apk"
