@@ -52,7 +52,7 @@ from typing import List, Set
 # tokens "v8a"/"v7a" inside arm64-v8a / armeabi-v7a do NOT match (they have a
 # letter right after the digit, e.g. "v8a"). Otherwise the identity prefix would
 # be truncated at the arch segment.
-VERSION_MARKER = re.compile(r"-v\d[\d.()+\-]*\.apk$", re.IGNORECASE)
+VERSION_MARKER = re.compile(r"-v\d[\d.()+\-]*\.(apk|zip)$", re.IGNORECASE)
 
 
 def gh_release_assets(release: str) -> List[dict]:
@@ -65,7 +65,7 @@ def gh_release_assets(release: str) -> List[dict]:
         )
         assets = json.loads(result.stdout or "{}").get("assets", []) or []
         return [a for a in assets if isinstance(a, dict)
-                and str(a.get("name", "")).endswith(".apk")]
+                and (str(a.get("name", "")).endswith(".apk") or str(a.get("name", "")).endswith(".zip"))]
     except Exception as e:
         print(f"⚠️  could not list release assets: {e}", file=sys.stderr)
         return []

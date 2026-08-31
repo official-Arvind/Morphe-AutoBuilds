@@ -79,6 +79,30 @@ jobs:
           echo "✅ Configs created for 17 apps"
           ls -la apps/apkmirror/*.json apps/apkpure/*.json apps/uptodown/*.json | wc -l
       
+
+      - name: Auto-Update patch-config.json
+        run: |
+          python -c '
+          import json, os
+          with open("patch-config.json", "r") as f:
+              config = json.load(f)
+          existing = set(app["app_name"] for app in config["patch_list"])
+          app_files = set()
+          for d in ["apkmirror", "apkpure", "aptoide", "uptodown"]:
+              dpath = f"apps/{d}"
+              if os.path.exists(dpath):
+                  app_files.update(f.replace(".json", "") for f in os.listdir(dpath) if f.endswith(".json"))
+          missing = sorted(list(app_files - existing))
+          if missing:
+              for app in missing:
+                  config["patch_list"].append({"app_name": app, "source": "Hoo"})
+              with open("patch-config.json", "w") as f:
+                  json.dump(config, f, indent=2)
+              print(f"Added {len(missing)} apps to patch-config.json")
+          else:
+              print("No new apps to add to patch-config.json")
+          '
+
       - name: Commit Configs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +111,7 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add apps/
-          git commit -m "Add configs for 17 new apps" || echo "No changes to commit"
+          git add apps/ patch-config.json
+          git commit -m "Auto-update apps and patch-config" || echo "No changes to commit"
           git remote set-url --push origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin HEAD:${GITHUB_REF_NAME}

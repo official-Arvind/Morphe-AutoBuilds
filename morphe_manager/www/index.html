@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morphe Manager - Root Modules</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #bb86fc;
+            --primary-variant: #3700b3;
+            --secondary-color: #03dac6;
+            --on-bg: #ffffff;
+            --on-surface: #e0e0e0;
+            --error-color: #cf6679;
+            --success-color: #00c853;
+            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --border-radius: 12px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--on-bg);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            min-height: 100vh;
+            background-color: var(--surface-color);
+            padding: var(--spacing-lg);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #aaaaaa;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: var(--spacing-lg);
+            background: rgba(255,255,255,0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+            color: #888;
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: var(--bg-color);
+        }
+
+        .tab-content {
+            display: none;
+            flex-grow: 1;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Module List Styles */
+        .module-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .module-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .module-card:hover {
+            border-color: var(--primary-color);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .module-checkbox {
+            margin-right: var(--spacing-md);
+            width: 24px;
+            height: 24px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .module-info {
+            flex-grow: 1;
+        }
+
+        .module-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .module-filename {
+            font-size: 12px;
+            color: #888;
+            word-break: break-all;
+        }
+
+        /* Settings Styles */
+        .settings-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .settings-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .settings-desc {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        input[type="time"] {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--on-bg);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+
+        /* Buttons & status */
+        .btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            background: var(--primary-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s, opacity 0.2s;
+            margin-top: auto;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #555;
+            color: #888;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: var(--on-bg);
+            margin-top: var(--spacing-md);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .status-box {
+            margin-top: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .status-info { background: rgba(3, 218, 198, 0.1); color: var(--secondary-color); border: 1px solid rgba(3, 218, 198, 0.2); }
+        .status-error { background: rgba(207, 102, 121, 0.1); color: var(--error-color); border: 1px solid rgba(207, 102, 121, 0.2); }
+        .status-success { background: rgba(0, 200, 83, 0.1); color: var(--success-color); border: 1px solid rgba(0, 200, 83, 0.2); }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Morphe Manager</h1>
+            <div class="subtitle">By Arvind Ji (The New Perfectionist)</div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('modules')">Modules</div>
+            <div class="tab" onclick="switchTab('settings')">Auto-Update Settings</div>
+        </div>
+
+        <div id="tab-modules" class="tab-content active">
+            <div id="loading" class="loader-container">
+                <div class="loading-spinner" style="width:30px; height:30px; border-width: 4px; border-top-color: var(--primary-color); margin-bottom: 15px;"></div>
+                <div>Fetching latest builds from GitHub...</div>
+            </div>
+
+            <div class="module-list" id="appList" style="display: none;">
+                <!-- Modules injected here -->
+            </div>
+
+            <button id="installBtn" class="btn" style="display: none;" disabled>Select Modules to Flash</button>
+            <div id="status-modules" class="status-box"></div>
+        </div>
+
+        <div id="tab-settings" class="tab-content">
+            <div class="settings-group">
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">Enable Auto-Update</div>
+                        <div class="settings-desc">Automatically fetch and flash the latest root modules in the background.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="autoUpdateToggle">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row" id="timeRow" style="opacity: 0.5; pointer-events: none;">
+                    <div>
+                        <div class="settings-label">Update Time</div>
+                        <div class="settings-desc">Time to check for updates daily.</div>
+                    </div>
+                    <input type="time" id="updateTime" value="03:00">
+                </div>
+            </div>
+            
+            <button id="saveSettingsBtn" class="btn btn-secondary">Save Settings</button>
+            <div id="status-settings" class="status-box"></div>
+        </div>
+    </div>
+
+    <script>
+        const REPO = 'official-Arvind/Morphe-AutoBuilds';
+        let availableModules = [];
+
+        // Tab Switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tab}`).classList.add('active');
+        }
+
+        // Fetch GitHub Release
+        async function fetchLatestRelease() {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
+                if (!res.ok) throw new Error("Failed to fetch GitHub release.");
+                const release = await res.json();
+                
+                availableModules = release.assets.filter(asset => asset.name.endsWith('.zip') && !asset.name.includes('morphe-manager'));
+                
+                if (availableModules.length > 0) {
+                    renderAppList();
+                } else {
+                    showStatus('modules', 'No Magisk modules found in the latest release.', 'error');
+                    document.getElementById('loading').style.display = 'none';
+                }
+            } catch (e) {
+                showStatus('modules', `Network Error: ${e.message}`, 'error');
+                document.getElementById('loading').style.display = 'none';
+                console.error(e);
+            }
+        }
+
+        function renderAppList() {
+            const listEl = document.getElementById('appList');
+            listEl.innerHTML = '';
+            
+            availableModules.forEach(mod => {
+                let cleanName = mod.name.split('-')[0] || mod.name;
+                // Capitalize
+                cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+                
+                const card = document.createElement('label');
+                card.className = 'module-card';
+                card.innerHTML = `
+                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="updateBtn()">
+                    <div class="module-info">
+                        <div class="module-name">${cleanName}</div>
+                        <div class="module-filename">${mod.name}</div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+            
+            document.getElementById('loading').style.display = 'none';
+            listEl.style.display = 'flex';
+            document.getElementById('installBtn').style.display = 'block';
+        }
+
+        function updateBtn() {
+            const checkedCount = document.querySelectorAll('.module-checkbox:checked').length;
+            const btn = document.getElementById('installBtn');
+            if (checkedCount > 0) {
+                btn.disabled = false;
+                btn.innerText = `Patch & Install (${checkedCount}) Modules`;
+            } else {
+                btn.disabled = true;
+                btn.innerText = "Select Modules to Flash";
+            }
+        }
+
+        function showStatus(tab, message, type, sticky = false) {
+            const box = document.getElementById(`status-${tab}`);
+            box.className = `status-box status-${type}`;
+            box.innerText = message;
+            box.style.display = 'block';
+            if (!sticky) {
+                setTimeout(() => { box.style.display = 'none'; }, 5000);
+            }
+        }
+
+        // Install Action
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            const checked = document.querySelectorAll('.module-checkbox:checked');
+            const urls = Array.from(checked).map(cb => cb.value);
+            if (urls.length === 0) return;
+            
+            const btn = document.getElementById('installBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loading-spinner"></div> Flashing... Please do not close`;
+            showStatus('modules', "Downloading and installing modules... Device will reboot automatically on success.", 'info', true);
+            
+            try {
+                const res = await fetch('/cgi-bin/install.sh', {
+                    method: 'POST',
+                    body: JSON.stringify({ urls })
+                });
+                
+                const text = await res.text();
+                if (res.ok && text.includes("SUCCESS")) {
+                    showStatus('modules', "Flash successful! Rebooting device now...", 'success', true);
+                } else {
+                    showStatus('modules', `Installation failed: ${text}`, 'error', true);
+                    btn.disabled = false;
+                    btn.innerText = "Retry Installation";
+                }
+            } catch (e) {
+                showStatus('modules', `Communication error: ${e.message}`, 'error', true);
+                btn.disabled = false;
+                btn.innerText = "Retry Installation";
+            }
+        });
+
+        // Settings Logic
+        const autoUpdateToggle = document.getElementById('autoUpdateToggle');
+        const timeRow = document.getElementById('timeRow');
+        
+        autoUpdateToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                timeRow.style.opacity = '1';
+                timeRow.style.pointerEvents = 'auto';
+            } else {
+                timeRow.style.opacity = '0.5';
+                timeRow.style.pointerEvents = 'none';
+            }
+        });
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/cgi-bin/config.sh?action=get');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.enabled === "true") {
+                        autoUpdateToggle.checked = true;
+                        timeRow.style.opacity = '1';
+                        timeRow.style.pointerEvents = 'auto';
+                    }
+                    if (data.time) {
+                        document.getElementById('updateTime').value = data.time;
+                    }
+                }
+            } catch (e) { console.error("Could not load config", e); }
+        }
+
+        document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveSettingsBtn');
+            btn.disabled = true;
+            
+            const enabled = autoUpdateToggle.checked;
+            const time = document.getElementById('updateTime').value;
+            
+            try {
+                const res = await fetch('/cgi-bin/config.sh', {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "set", enabled: enabled.toString(), time: time })
+                });
+                if (res.ok) {
+                    showStatus('settings', "Settings saved and background daemon updated successfully.", 'success');
+                } else {
+                    showStatus('settings', "Failed to save settings.", 'error');
+                }
+            } catch(e) {
+                showStatus('settings', "Network error saving settings.", 'error');
+            }
+            btn.disabled = false;
+        });
+
+        // Init
+        fetchLatestRelease();
+        loadSettings();
+    </script>
+</body>
+</html>

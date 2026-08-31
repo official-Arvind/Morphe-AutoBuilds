@@ -105,7 +105,7 @@ jobs:
         id: find-apk
         run: |
           # Find the built APK file(s)
-          apk_files=$(ls -1 *.apk 2>/dev/null)
+          apk_files=$(ls -1 *.apk *.zip 2>/dev/null)
           if [ -z "$apk_files" ]; then
             echo "❌ No APK files found"
             exit 1
@@ -128,7 +128,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: manual-apk-${{ inputs.app_name }}-${{ inputs.architecture }}
-          path: "*.apk"
+          path: |\n            *.apk\n            *.zip
       
       - name: Check Existing Release
         if: ${{ inputs.replace_in_release == true }}
@@ -161,7 +161,7 @@ jobs:
           fi
           
           # Add the new APK name(s) to the text file
-          for apk in *.apk; do
+          for apk in *.apk *.zip; do
             echo "$apk" >> current_assets.txt
           done
           
@@ -200,7 +200,7 @@ jobs:
             # shares a {app}-{arch}- prefix with a freshly built APK but has a
             # different version.
             : > keep_apks.txt
-            for apk in *.apk; do
+            for apk in *.apk *.zip; do
               [ -f "$apk" ] || continue
               echo "$apk" >> keep_apks.txt
             done
@@ -208,7 +208,7 @@ jobs:
               echo "⚠️  cleanup_old_apks.py failed; continuing with clobber upload"
 
             # --clobber overwrites the file if it exists, adds it if it doesn't
-            gh release upload latest *.apk --clobber
+            gh release upload latest *.apk *.zip --clobber
 
             echo "📝 Updating release title and notes..."
             gh release edit latest \
@@ -220,7 +220,7 @@ jobs:
             gh release create "latest" \
               --title "Morphe APKs - $(date +'%Y-%m-%d %H:%M')" \
               --notes-file release_notes.md \
-              *.apk \
+              *.apk *.zip \
               --latest
           fi
           
@@ -235,7 +235,7 @@ jobs:
           echo "🔗 Updated Release URL: $release_url"
           echo ""
           echo "📦 Direct APK links:"
-          for apk in *.apk; do
+          for apk in *.apk *.zip; do
             echo "  - $release_url/download/$apk"
           done
       

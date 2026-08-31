@@ -210,7 +210,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk-${{ matrix.app_name }}-${{ matrix.source }}
-          path: "*.apk"
+          path: |
+            *.apk
+            *.zip
 
       - name: Upload Build Records
         if: always()
@@ -255,7 +257,7 @@ jobs:
       - name: Check if Any APKs Were Built
         id: check-apks
         run: |
-          built_count=$(find ./all-apks -name "*.apk" 2>/dev/null | wc -l)
+          built_count=$(find ./all-apks -name "*.apk" -o -name "*.zip" 2>/dev/null | wc -l)
           echo "Built APKs: $built_count"
 
           if [ "$built_count" -eq 0 ]; then
@@ -271,7 +273,7 @@ jobs:
         run: |
           mkdir -p ./release-apks
           echo "📦 Collecting rebuilt APKs..."
-          find ./all-apks -name "*.apk" -exec cp -f {} ./release-apks/ \; 2>/dev/null || true
+          find ./all-apks -name "*.apk" -o -name "*.zip" -exec cp -f {} ./release-apks/ \; 2>/dev/null || true
 
           echo "📁 APKs ready for release:"
           ls -la ./release-apks/
@@ -325,6 +327,15 @@ jobs:
             echo "📭 Release 'latest' does not exist; it will be created."
           fi
       
+
+      - name: Build Morphe Manager
+        if: steps.check-apks.outputs.skip_release == 'false'
+        run: |
+          if [ -d "morphe_manager" ]; then
+            cd morphe_manager
+            zip -r9 ../release-apks/morphe-manager.zip .
+            cd ..
+          fi
       - name: Generate Release Notes
         if: steps.check-apks.outputs.skip_release == 'false'
         env:
@@ -339,7 +350,7 @@ jobs:
             : > current_assets.txt
           fi
 
-          for apk in ./release-apks/*.apk; do
+          for apk in ./release-apks/*.apk ./release-apks/*.zip; do
             [ -f "$apk" ] || continue
             basename "$apk" >> current_assets.txt
           done
@@ -394,7 +405,7 @@ jobs:
           echo "🚀 Publishing rebuilt assets to release..."
 
           # Count APKs
-          apk_count=$(ls -1 ./release-apks/*.apk 2>/dev/null | wc -l || echo "0")
+          apk_count=$(ls -1 ./release-apks/*.apk ./release-apks/*.zip 2>/dev/null | wc -l || echo "0")
 
           if [ $apk_count -eq 0 ]; then
             echo "❌ No APKs found to release"
@@ -404,7 +415,7 @@ jobs:
           echo "📦 Releasing $apk_count APK(s)..."
 
           # Build the asset list: APKs + optional manifest.json
-          ASSETS=( ./release-apks/*.apk )
+          ASSETS=( ./release-apks/*.apk ./release-apks/*.zip )
           if [ -f ./release-apks/manifest.json ]; then
             ASSETS+=( ./release-apks/manifest.json )
             echo "📎 Including manifest.json"
@@ -420,7 +431,7 @@ jobs:
             # release APK sharing a {app}-{arch}- identity prefix with a new APK
             # but with a different version.
             : > keep_apks.txt
-            for apk in ./release-apks/*.apk; do
+            for apk in ./release-apks/*.apk ./release-apks/*.zip; do
               [ -f "$apk" ] || continue
               basename "$apk" >> keep_apks.txt
             done
@@ -453,7 +464,7 @@ jobs:
           echo "🔗 Release URL: $release_url"
           echo ""
           echo "📦 Direct Download Links:"
-          for apk in ./release-apks/*.apk; do
+          for apk in ./release-apks/*.apk ./release-apks/*.zip; do
             filename=$(basename "$apk")
             echo "- $filename: $release_url/download/$filename"
           done

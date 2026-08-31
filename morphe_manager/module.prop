@@ -1,0 +1,6 @@
+id=morphe_manager
+name=Morphe Manager
+version=1.0.0
+versionCode=10000
+author=Arvind Ji (The New Perfectionist)
+description=Local Web UI to download and flash Morphe patched modules cleanly.

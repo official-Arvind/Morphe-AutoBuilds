@@ -5,6 +5,7 @@ import os
 import shutil
 from sys import exit
 from pathlib import Path
+from src import magisk
 from os import getenv
 import subprocess
 from src import (
@@ -27,7 +28,7 @@ def _should_retry_with_older_version(output: str | None) -> bool:
         or "patching aborted" in t
     )
 
-def run_build(app_name: str, source: str, arch: str = "universal") -> str:
+def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool = False) -> str:
     """Build APK for specific architecture"""
     download_files, name = downloader.download_required(source)
 
@@ -135,6 +136,9 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
 
     exclude_patches = []
     include_patches = []
+    
+    if is_root:
+        exclude_patches.extend(["-d", "microg-support", "-d", "gmscore-support", "-d", "vanced-microg-support"])
 
     patches_path = Path("patches") / f"{app_name}-{source}.txt"
     if patches_path.exists():
@@ -302,7 +306,12 @@ def run_build(app_name: str, source: str, arch: str = "universal") -> str:
         # Patch succeeded -> cleanup input and sign.
         input_apk.unlink(missing_ok=True)
 
-        signed_apk = Path(f"{app_name}-{arch}-{name}-v{version}.apk")
+
+        if is_root:
+            signed_apk = Path(f"{app_name}-{arch}-root-{name}-v{version}.apk")
+        else:
+            signed_apk = Path(f"{app_name}-{arch}-{name}-v{version}.apk")
+
 
         apksigner = utils.find_apksigner()
         if not apksigner:
@@ -362,11 +371,20 @@ def main():
         # Build for each architecture
         built_apks = []
         for arch in arches:
-            logging.info(f"🔨 Building {app_name} for {arch} architecture...")
-            apk_path = run_build(app_name, source, arch)
+            logging.info(f"🔨 Building {app_name} for {arch} architecture (Non-Root)...")
+            apk_path = run_build(app_name, source, arch, is_root=False)
             if apk_path:
                 built_apks.append(apk_path)
                 print(f"✅ Built {arch} version: {Path(apk_path).name}")
+            
+            logging.info(f"🔨 Building {app_name} for {arch} architecture (Root)...")
+            root_apk_path = run_build(app_name, source, arch, is_root=True)
+            if root_apk_path:
+                zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest")
+                if zip_path:
+                    print(f"✅ Built Magisk Module: {Path(zip_path).name}")
+                Path(root_apk_path).unlink(missing_ok=True) # delete root apk, keep zip
+
         
         # Summary
         print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
@@ -376,9 +394,17 @@ def main():
     else:
         # Fallback to single universal build
         logging.warning("arch-config.json not found, building universal only")
-        apk_path = run_build(app_name, source, "universal")
+        apk_path = run_build(app_name, source, "universal", is_root=False)
         if apk_path:
             print(f"🎯 Final APK path: {apk_path}")
+        
+        root_apk_path = run_build(app_name, source, "universal", is_root=True)
+        if root_apk_path:
+            zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest")
+            if zip_path:
+                print(f"🎯 Final Magisk Module path: {zip_path}")
+            Path(root_apk_path).unlink(missing_ok=True)
+
 
 if __name__ == "__main__":
     main()
