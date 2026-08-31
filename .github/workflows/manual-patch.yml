@@ -128,7 +128,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: manual-apk-${{ inputs.app_name }}-${{ inputs.architecture }}
-          path: |\n            *.apk\n            *.zip
+          path: |
+            *.apk
+            *.zip
       
       - name: Check Existing Release
         if: ${{ inputs.replace_in_release == true }}
