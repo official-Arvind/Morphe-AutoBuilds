@@ -170,18 +170,10 @@ jobs:
           done
           shopt -u nullglob
           
-          # 2. CREATE RELEASE NOTES
-          cat > release_notes.md << EOF
-          # Morphe APKs
-          
-          ## 📱 Available Apps
-          EOF
-          
           # Sort and use 'unique' to remove duplicates in the text list
-          sort -u current_assets.txt | while read filename; do
-            echo "- $filename" >> release_notes.md
-          done
-          
+          sort -u current_assets.txt > release_assets.txt
+          python scripts/generate_release_notes.py
+
           cat >> release_notes.md << EOF
           
           ---

@@ -310,7 +310,7 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
         if is_root:
             signed_apk = Path(f"{app_name}-{arch}-root-{name}-v{version}.apk")
         else:
-            signed_apk = Path(f"{app_name}-{arch}-{name}-v{version}.apk")
+            signed_apk = Path(f"{app_name}-{arch}-nonroot-{name}-v{version}.apk")
 
 
         apksigner = utils.find_apksigner()
