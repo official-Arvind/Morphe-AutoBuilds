@@ -30,6 +30,12 @@ def _should_retry_with_older_version(output: str | None) -> bool:
 
 def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool = False) -> str:
     logging.info(f"Starting build for {app_name} (Source: {source}, Arch: {arch}, Root: {is_root})")
+    download_files, name = downloader.download_required(source)
+
+    # Log downloaded files for debugging
+    logging.info(f"📦 Downloaded {len(download_files)} files for {source}:")
+    for file in download_files:
+        logging.info(f"  - {file.name} ({file.stat().st_size} bytes)")
 
     cli = utils.find_cli()
     patches = utils.find_patches()
