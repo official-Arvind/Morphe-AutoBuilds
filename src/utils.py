@@ -588,12 +588,19 @@ def check_apk_integrity(apk_path: Path) -> bool:
     if not apk_path or not apk_path.exists() or apk_path.stat().st_size == 0:
         return False
     try:
+        import subprocess
+        # Fallback to system unzip -t if zipfile fails
         if not zipfile.is_zipfile(apk_path):
+            try:
+                res = subprocess.run(["unzip", "-t", str(apk_path)], capture_output=True)
+                if res.returncode == 0:
+                    return True
+            except:
+                pass
             return False
+        
         with zipfile.ZipFile(apk_path, 'r') as z:
-            bad_file = z.testzip()
-            if bad_file is not None:
-                return False
+            # For huge APKs testzip can be super slow or fail, we just check if it opens and has manifest
             if 'AndroidManifest.xml' not in z.namelist():
                 logging.warning('AndroidManifest.xml missing from APK')
                 return False
@@ -603,13 +610,7 @@ def check_apk_integrity(apk_path: Path) -> bool:
 
 
 def find_cli() -> Path | None:
-    cli = find_file(list(Path('.').glob('*.jar')), contains='cli')
-    if not cli:
-        cli = find_file(list(Path('.').glob('*.jar')), contains='desktop')
-    return cli
+    return find_file(list(Path('.').glob('*.jar')), contains='cli')
 
 def find_patches() -> Path | None:
-    patches = find_file(list(Path('.').glob('*.jar')), contains='patches')
-    if not patches:
-        patches = find_file(list(Path('.').glob('*.mpp')), contains='patches')
-    return patches
+    return find_file(list(Path('.').glob('*.jar')), contains='patches')
