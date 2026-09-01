@@ -13,7 +13,7 @@ download_file() {
     local FILE="$1"
     local URL="$2"
     if command -v curl >/dev/null 2>&1; then
-        curl -L -s -o "$FILE" "$URL"
+        curl -f -L -s -o "$FILE" "$URL"
     elif command -v wget >/dev/null 2>&1; then
         wget -q -O "$FILE" "$URL"
     elif command -v busybox >/dev/null 2>&1; then

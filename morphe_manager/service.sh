@@ -30,4 +30,5 @@ if [ -f "$STATE_FILE" ]; then
 fi
 
 # Normal boot: Start the web UI server on port 8080 serving the www folder
+chmod -R 755 $MODDIR/www/cgi-bin 2>/dev/null
 busybox httpd -p 8080 -h $MODDIR/www
