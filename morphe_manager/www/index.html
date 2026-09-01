@@ -474,8 +474,15 @@
         const REPO = 'official-Arvind/Morphe-AutoBuilds';
         let availableModules = [];
         let selectedUrls = new Set();
+        
+        function tryVibrate(ms) {
+            try {
+                if (navigator.vibrate) navigator.vibrate(ms);
+            } catch(e) {}
+        }
 
         function switchTab(tab, event) {
+            tryVibrate(30);
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
@@ -552,8 +559,8 @@
             listEl.innerHTML = '';
             
             modulesToRender.forEach(mod => {
-                let cleanName = mod.name.split('-')[0] || mod.name;
-                cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+                let baseName = mod.name.split('-universal')[0].split('-arm64')[0].split('-armeabi')[0];
+                let cleanName = baseName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                 
                 const version = extractVersion(mod.name);
                 const arch = extractArch(mod.name);
@@ -565,7 +572,7 @@
                 const card = document.createElement('label');
                 card.className = `module-card ${selectedClass}`;
                 card.innerHTML = `
-                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="updateBtn(this)" ${isChecked}>
+                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="tryVibrate(15); updateBtn(this)" ${isChecked}>
                     <div class="module-info">
                         <div class="module-name">${cleanName}</div>
                         <div class="module-details">
@@ -623,8 +630,20 @@
             
             const btn = document.getElementById('installBtn');
             btn.disabled = true;
+            tryVibrate(50);
             btn.innerHTML = `<div class="loading-spinner"></div> Flashing... Please do not close`;
-            showStatus('modules', "Downloading and installing modules... Device will reboot automatically on success.", 'info', true);
+            
+            const roasts = [
+                "Downloading... if your internet isn't powered by a potato.",
+                "Flashing... don't you dare touch that back button.",
+                "Installing your shiny new modules. Hold your horses.",
+                "Patching things up... hopefully you didn't pick anything conflicting.",
+                "Doing the dirty work. Sit back and watch.",
+                "Your modules are being flashed. Pray to the bootloop gods."
+            ];
+            const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
+            
+            showStatus('modules', `${randomRoast}<br><br><span style="opacity:0.8; font-size:12px;">Device will automatically reboot on success.</span>`, 'info', true);
             
             try {
                 const res = await fetch('/cgi-bin/install.sh', {
@@ -634,13 +653,16 @@
                 
                 const text = await res.text();
                 if (res.ok && text.includes("SUCCESS")) {
-                    showStatus('modules', "Flash successful! Rebooting device now...", 'success', true);
+                    tryVibrate([50, 50, 50]);
+                    showStatus('modules', "✨ Flash successful! Your device is going down for a reboot now...", 'success', true);
                 } else {
-                    showStatus('modules', `Installation failed:<br><pre style="margin-top:8px; font-size:11px; white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px;">${text}</pre>`, 'error', true);
+                    tryVibrate([100, 50, 100]);
+                    showStatus('modules', `🔥 Oof. That failed miserably. Here is why:<br><pre style="margin-top:8px; font-size:11px; white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px;">${text.trim() || 'No logs. Did you even send something?'}</pre>`, 'error', true);
                     updateBtn(null);
                 }
             } catch (e) {
-                showStatus('modules', `Communication error: ${e.message}`, 'error', true);
+                tryVibrate([100, 50, 100]);
+                showStatus('modules', `Communication error! Are you running this locally? Exception: ${e.message}`, 'error', true);
                 updateBtn(null);
             }
         });

@@ -3,17 +3,16 @@ echo "Content-type: text/plain"
 echo ""
 
 read -r POST_DATA
+
 # Super simple JSON extractor to avoid needing jq on device
 URLS=$(echo "$POST_DATA" | grep -o '"https://[^"]*"' | sed 's/"//g')
-
-STATE_FILE="/data/adb/morphe_state.txt"
 TMP_DIR="/data/local/tmp/morphe_flasher"
 
 rm -rf "$TMP_DIR"
 mkdir -p "$TMP_DIR"
 
 if [ -z "$URLS" ]; then
-    echo "ERROR: No URLs provided."
+    echo "ERROR: Are you sending me empty air? No URLs provided."
     exit 1
 fi
 
@@ -27,49 +26,66 @@ download_file() {
     elif command -v busybox >/dev/null 2>&1; then
         busybox wget -q -O "$FILE" "$URL"
     else
-        echo "ERROR: No curl or wget found"
+        echo "ERROR: Your system is so barebones it doesn't even have curl or wget."
+        return 1
+    fi
+}
+
+flash_module() {
+    local ZIP="$1"
+    local LOG="$2"
+    if command -v magisk >/dev/null 2>&1; then
+        magisk --install-module "$ZIP" > "$LOG" 2>&1
+    elif command -v ksud >/dev/null 2>&1; then
+        ksud module install "$ZIP" > "$LOG" 2>&1
+    elif command -v apatch >/dev/null 2>&1; then
+        apatch module install "$ZIP" > "$LOG" 2>&1
+    else
+        echo "ERROR: Neither Magisk, KernelSU, nor APatch detected. Are you even rooted?" > "$LOG"
+        return 1
     fi
 }
 
 COUNTER=1
+SUCCESS_COUNT=0
+TOTAL_COUNT=$(echo "$URLS" | wc -w)
+
+echo "Starting download and flash for $TOTAL_COUNT modules..." >> "$TMP_DIR/master_log.txt"
+
 for URL in $URLS; do
     FILEPATH="$TMP_DIR/module_${COUNTER}.zip"
+    LOGPATH="$TMP_DIR/flash_log_${COUNTER}.txt"
     
+    echo "[-] Downloading module $COUNTER..." >> "$TMP_DIR/master_log.txt"
     download_file "$FILEPATH" "$URL"
     
     if [ -f "$FILEPATH" ] && unzip -t "$FILEPATH" > /dev/null 2>&1; then
-        echo "$FILEPATH" >> "$TMP_DIR/zip_list.txt"
+        echo "[-] Downloaded successfully. Flashing..." >> "$TMP_DIR/master_log.txt"
+        
+        if flash_module "$FILEPATH" "$LOGPATH"; then
+            echo "[✓] Flashed module $COUNTER successfully." >> "$TMP_DIR/master_log.txt"
+            SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+        else
+            echo "[x] Flashing failed for module $COUNTER." >> "$TMP_DIR/master_log.txt"
+            cat "$LOGPATH" >> "$TMP_DIR/master_log.txt"
+        fi
+        
+        # Clean up zip after flashing attempt to save space
+        rm -f "$FILEPATH"
     else
-        echo "ERROR: Download failed or invalid zip for $URL"
+        echo "[x] ERROR: Download failed or ZIP is corrupt for: $URL" >> "$TMP_DIR/master_log.txt"
         rm -f "$FILEPATH"
     fi
     COUNTER=$((COUNTER+1))
 done
 
-if [ -f "$TMP_DIR/zip_list.txt" ]; then
-    FIRST=true
-    while IFS= read -r ZIP; do
-        if $FIRST; then
-            # Flash the first one immediately in this context
-            if magisk --install-module "$ZIP" > "$TMP_DIR/flash_log.txt" 2>&1; then
-                rm -f "$ZIP"
-                FIRST=false
-            else
-                echo "ERROR: Magisk install failed for first module."
-                cat "$TMP_DIR/flash_log.txt"
-                exit 1
-            fi
-        else
-            # Queue remaining for the boot script
-            echo "$ZIP" >> "$STATE_FILE"
-        fi
-    done < "$TMP_DIR/zip_list.txt"
-    
-    echo "SUCCESS"
-    # Reboot in background so response reaches client
-    (sleep 2 && svc power reboot) &
+if [ "$SUCCESS_COUNT" -gt 0 ]; then
+    echo "SUCCESS: Flashed $SUCCESS_COUNT out of $TOTAL_COUNT modules."
+    # Wait a few seconds and reboot
+    (sleep 3 && svc power reboot || reboot) &
     exit 0
 else
-    echo "ERROR: No valid modules downloaded."
+    echo "ERROR: Absolute failure. Read the logs below to see how badly it went."
+    cat "$TMP_DIR/master_log.txt"
     exit 1
 fi

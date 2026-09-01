@@ -368,15 +368,13 @@ jobs:
               cd ..
               
               # Create update.json for Magisk
-              cat << EOF > release-apks/update.json
-          {
-            "version": "$NEW_VN",
-            "versionCode": $NEW_VC,
-            "zipUrl": "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/latest/morphe-manager.zip",
-            "changelog": "https://raw.githubusercontent.com/official-Arvind/Morphe-AutoBuilds/main/release_notes.md",
-            "hash": "$DIR_HASH"
-          }
-EOF
+              jq -n \
+                --arg v "$NEW_VN" \
+                --argjson vc "$NEW_VC" \
+                --arg z "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/latest/morphe-manager.zip" \
+                --arg c "https://raw.githubusercontent.com/official-Arvind/Morphe-AutoBuilds/main/release_notes.md" \
+                --arg h "$DIR_HASH" \
+                '{version: $v, versionCode: $vc, zipUrl: $z, changelog: $c, hash: $h}' > release-apks/update.json
             fi
           fi
       - name: Generate Release Notes
