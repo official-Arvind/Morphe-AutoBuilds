@@ -46,7 +46,7 @@ jobs:
         id: cache-tools
         with:
           path: tools/
-          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
+          key: revanced-tools-v2-${{ hashFiles('patch-config.json', 'arch-config.json') }}
       
       - name: Generate Cache Key
         id: cache-key
@@ -160,7 +160,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tools/
-          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
+          key: revanced-tools-v2-${{ hashFiles('patch-config.json', 'arch-config.json') }}
 
       - name: Install Python
         uses: actions/setup-python@v5
