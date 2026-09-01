@@ -145,7 +145,38 @@
             padding-bottom: 80px;
         }
 
+
+        .app-group {
+            margin-bottom: 16px;
+            background-color: var(--surface-color);
+            border-radius: var(--border-radius);
+            padding: 12px;
+        }
+        .app-group-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--on-bg);
+            text-transform: capitalize;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 4px;
+        }
+        .patch-group {
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .patch-group-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         .module-card {
+
             background-color: var(--surface-color);
             border-radius: var(--border-radius);
             padding: 16px;
@@ -408,7 +439,7 @@
         <header>
             <h1>Morphe Manager</h1>
             <div class="subtitle">Root Module Installer</div>
-            <div class="version-badge" id="appVersionBadge">v1.8</div>
+            <div class="version-badge" id="appVersionBadge">v1.9</div>
         </header>
 
         <div class="tabs">
@@ -502,7 +533,7 @@
                 if (!res.ok) throw new Error("Failed to fetch GitHub release.");
                 const release = await res.json();
                 
-                availableModules = release.assets.filter(asset => asset.name.endsWith('.zip') && !asset.name.includes('morphe-manager'));
+                availableModules = release.assets.filter(asset => (asset.name.endsWith('.zip') || asset.name.endsWith('.apk')) && !asset.name.includes('morphe-manager'));
                 
                 if (availableModules.length > 0) {
                     renderAppList(availableModules);
@@ -558,36 +589,91 @@
             const listEl = document.getElementById('appList');
             listEl.innerHTML = '';
             
+            // Group by app, then by patch source
+            const grouped = {};
+            
             modulesToRender.forEach(mod => {
-                let baseName = mod.name.split('-universal')[0].split('-arm64')[0].split('-armeabi')[0];
-                let cleanName = baseName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                let appName = "Unknown App";
+                let patchSource = "Other";
+                let typeStr = "Unknown";
+                let version = "v?";
                 
-                const version = extractVersion(mod.name);
-                const arch = extractArch(mod.name);
-                const size = formatBytes(mod.size);
+                const match = mod.name.match(/^(.*?)-(.*?)-(root|nonroot)-universal-v(.*?)\.(zip|apk)$/);
+                if (match) {
+                    appName = match[1].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    patchSource = match[2];
+                    typeStr = match[3] === 'root' ? 'Root Module (ZIP)' : 'Universal (APK)';
+                    version = "v" + match[4];
+                } else {
+                    // Fallback for older formats
+                    let baseName = mod.name.split('-universal')[0].split('-arm64')[0].split('-armeabi')[0];
+                    appName = baseName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                    version = extractVersion(mod.name);
+                    typeStr = mod.name.endsWith('.zip') ? 'Root Module (ZIP)' : 'Universal (APK)';
+                }
                 
-                const isChecked = selectedUrls.has(mod.browser_download_url) ? 'checked' : '';
-                const selectedClass = isChecked ? 'selected' : '';
+                if (!grouped[appName]) grouped[appName] = {};
+                if (!grouped[appName][patchSource]) grouped[appName][patchSource] = [];
                 
-                const card = document.createElement('label');
-                card.className = `module-card ${selectedClass}`;
-                card.innerHTML = `
-                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="tryVibrate(15); updateBtn(this)" ${isChecked}>
-                    <div class="module-info">
-                        <div class="module-name">${cleanName}</div>
-                        <div class="module-details">
-                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);">${version}</span>
-                            <span class="badge">${arch}</span>
-                            <span class="badge">${size}</span>
-                        </div>
-                        <div class="module-filename">${mod.name}</div>
-                    </div>
-                `;
-                listEl.appendChild(card);
+                grouped[appName][patchSource].push({
+                    ...mod,
+                    typeStr,
+                    version
+                });
             });
             
+            for (const [appName, sources] of Object.entries(grouped)) {
+                const appDiv = document.createElement('div');
+                appDiv.className = 'app-group';
+                appDiv.innerHTML = `<div class="app-group-title">${appName}</div>`;
+                
+                for (const [source, mods] of Object.entries(sources)) {
+                    const sourceDiv = document.createElement('div');
+                    sourceDiv.className = 'patch-group';
+                    sourceDiv.innerHTML = `<div class="patch-group-title">Patch: ${source}</div>`;
+                    
+                    mods.forEach(mod => {
+                        const size = formatBytes(mod.size);
+                        const isChecked = selectedUrls.has(mod.browser_download_url) ? 'checked' : '';
+                        const selectedClass = isChecked ? 'selected' : '';
+                        
+                        // Disable checkbox if it's an APK (can't be flashed by this tool usually)
+                        // Actually the user says "when clicked will show those two files".
+                        // Let's allow downloading both. But for daemon flash, we shouldn't pass APKs.
+                        // For the web UI action "Select Modules to Flash", we should only allow checking ZIPs for flashing.
+                        // Non-root APKs can just be downloaded manually.
+                        
+                        const isZip = mod.name.endsWith('.zip');
+                        const inputHtml = isZip ? 
+                            `<input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="tryVibrate(15); updateBtn(this)" ${isChecked}>` :
+                            `<a href="${mod.browser_download_url}" class="badge" style="background:var(--primary-color);color:#000;text-decoration:none;padding:8px;border-radius:8px;font-weight:bold;">Download</a>`;
+                            
+                        const card = document.createElement('label');
+                        card.className = `module-card ${selectedClass}`;
+                        if (!isZip) card.style.cursor = 'default';
+                        
+                        card.innerHTML = `
+                            ${isZip ? inputHtml : ''}
+                            <div class="module-info">
+                                <div class="module-name" style="font-size:14px;">${mod.typeStr}</div>
+                                <div class="module-details">
+                                    <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);">${mod.version}</span>
+                                    <span class="badge">${size}</span>
+                                    ${!isZip ? inputHtml : ''}
+                                </div>
+                                <div class="module-filename">${mod.name}</div>
+                            </div>
+                        `;
+                        sourceDiv.appendChild(card);
+                    });
+                    
+                    appDiv.appendChild(sourceDiv);
+                }
+                listEl.appendChild(appDiv);
+            }
+            
             document.getElementById('loading').style.display = 'none';
-            listEl.style.display = 'flex';
+            listEl.style.display = 'block'; // Change from flex to block for standard stacking
             updateBtn(null);
         }
 

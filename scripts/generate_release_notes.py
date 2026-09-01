@@ -24,11 +24,16 @@ def generate_notes():
             continue
         
         # Simple heuristic to extract app name (first word before dash)
-        match = re.match(r"^([a-zA-Z0-9_]+(-[a-zA-Z0-9_]+)*?)-(universal|arm64-v8a|armeabi-v7a|x86|x86_64)", asset)
+        match = re.match(r"^(.*?)-(.*?)-(root|nonroot)-universal-v(.*?)\.(zip|apk)$", asset)
         if match:
-            app_name = match.group(1).title().replace("-", " ")
+            app_name = match.group(1).title().replace("-", " ") + f" (Patch: {match.group(2).capitalize()})"
         else:
-            app_name = asset.split("-")[0].title()
+            match_old = re.match(r"^([a-zA-Z0-9_]+(-[a-zA-Z0-9_]+)*?)-(universal|arm64-v8a|armeabi-v7a|x86|x86_64)", asset)
+            if match_old:
+                app_name = match_old.group(1).title().replace("-", " ")
+            else:
+                app_name = asset.split("-")[0].title()
+
         apps[app_name].append(asset)
 
     with open("release_notes.md", "w", encoding="utf-8") as out:

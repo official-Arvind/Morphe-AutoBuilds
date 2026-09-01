@@ -245,9 +245,9 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
             input_apk.unlink(missing_ok=True)
 
             if is_root:
-                signed_apk = Path(f"{app_name}-{arch}-root-{name}-v{version}.apk")
+                signed_apk = Path(f"{app_name}-{source}-root-universal-v{version}.apk")
             else:
-                signed_apk = Path(f"{app_name}-{arch}-nonroot-{name}-v{version}.apk")
+                signed_apk = Path(f"{app_name}-{source}-nonroot-universal-v{version}.apk")
 
             apksigner = utils.find_apksigner()
             if not apksigner:
@@ -308,7 +308,17 @@ def main():
             logging.info(f"🔨 Building {app_name} for {arch} architecture (Root)...")
             root_apk_path = run_build(app_name, source, arch, is_root=True)
             if root_apk_path:
-                zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest")
+
+                package_name = "unknown"
+                for p_conf in Path("apps").rglob(f"{app_name}.json"):
+                    try:
+                        with p_conf.open() as f_conf:
+                            import json
+                            package_name = json.load(f_conf).get("package", "unknown")
+                            break
+                    except:
+                        pass
+                zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest", source, package_name)
                 if zip_path:
                     print(f"✅ Built Magisk Module: {Path(zip_path).name}")
                 Path(root_apk_path).unlink(missing_ok=True) # delete root apk, keep zip
@@ -328,7 +338,17 @@ def main():
         
         root_apk_path = run_build(app_name, source, "universal", is_root=True)
         if root_apk_path:
-            zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest")
+
+            package_name = "unknown"
+            for p_conf in Path("apps").rglob(f"{app_name}.json"):
+                try:
+                    with p_conf.open() as f_conf:
+                        import json
+                        package_name = json.load(f_conf).get("package", "unknown")
+                        break
+                except:
+                    pass
+            zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest", source, package_name)
             if zip_path:
                 print(f"🎯 Final Magisk Module path: {zip_path}")
             Path(root_apk_path).unlink(missing_ok=True)
