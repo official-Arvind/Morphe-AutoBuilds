@@ -1,3 +1,8 @@
+### v
+- Background WebUI flashing improvements
+- Built-in root binary detection fixes
+- Bundled static busybox for universal compatibility
+
 ### v1.6
 - Complete APatch support & exhaustive legacy root detection (supports absolute binary fallback for Magisk, KernelSU, APatch/apd across 18+ different system paths).
 
