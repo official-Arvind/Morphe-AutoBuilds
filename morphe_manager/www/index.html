@@ -6,28 +6,24 @@
     <title>Morphe Manager - Root Modules</title>
     <style>
         :root {
-            --bg-color: #121212;
-            --surface-color: #1e1e1e;
-            --primary-color: #bb86fc;
-            --primary-variant: #3700b3;
-            --secondary-color: #03dac6;
-            --on-bg: #ffffff;
-            --on-surface: #e0e0e0;
-            --error-color: #cf6679;
-            --success-color: #00c853;
-            --font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            --border-radius: 12px;
-            --spacing-sm: 8px;
-            --spacing-md: 16px;
-            --spacing-lg: 24px;
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --surface-hover: #334155;
+            --primary-color: #38bdf8;
+            --primary-hover: #0ea5e9;
+            --secondary-color: #10b981;
+            --on-bg: #f8fafc;
+            --on-surface: #cbd5e1;
+            --on-surface-muted: #94a3b8;
+            --error-color: #ef4444;
+            --success-color: #22c55e;
+            --border-radius: 16px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            --transition: all 0.2s ease-in-out;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
             font-family: var(--font-family);
             background-color: var(--bg-color);
@@ -38,301 +34,417 @@
             justify-content: center;
         }
 
-        .container {
+        .app-container {
             width: 100%;
             max-width: 600px;
             min-height: 100vh;
-            background-color: var(--surface-color);
-            padding: var(--spacing-lg);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            background-color: var(--bg-color);
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         header {
+            padding: 24px 20px;
             text-align: center;
-            margin-bottom: var(--spacing-lg);
-            padding-bottom: var(--spacing-md);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
         }
 
         h1 {
             font-size: 24px;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 4px;
-            color: var(--primary-color);
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .subtitle {
             font-size: 14px;
-            color: #aaaaaa;
+            color: var(--on-surface-muted);
         }
 
         .tabs {
             display: flex;
-            margin-bottom: var(--spacing-lg);
-            background: rgba(255,255,255,0.05);
+            margin: 20px 20px 0;
+            background-color: var(--surface-color);
             border-radius: var(--border-radius);
-            overflow: hidden;
+            padding: 4px;
         }
 
         .tab {
             flex: 1;
-            padding: 12px;
+            padding: 10px;
             text-align: center;
             cursor: pointer;
+            border-radius: calc(var(--border-radius) - 4px);
             font-weight: 600;
-            transition: background 0.2s, color 0.2s;
-            color: #888;
+            font-size: 14px;
+            color: var(--on-surface-muted);
+            transition: var(--transition);
+            user-select: none;
         }
 
         .tab.active {
-            background: var(--primary-color);
-            color: var(--bg-color);
+            background-color: var(--primary-color);
+            color: #0f172a;
         }
 
         .tab-content {
             display: none;
+            padding: 20px;
             flex-grow: 1;
         }
 
-        .tab-content.active {
-            display: block;
+        .tab-content.active { display: block; }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 16px;
+            position: relative;
         }
 
-        /* Module List Styles */
-        .module-list {
+        .search-input {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background-color: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            color: var(--on-bg);
+            font-size: 16px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .app-list {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-md);
-            margin-bottom: var(--spacing-lg);
+            gap: 12px;
+            padding-bottom: 80px;
         }
 
         .module-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
+            background-color: var(--surface-color);
             border-radius: var(--border-radius);
-            padding: var(--spacing-md);
+            padding: 16px;
             display: flex;
             align-items: center;
-            transition: border-color 0.2s, background 0.2s;
+            gap: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
         }
 
         .module-card:hover {
+            background-color: var(--surface-hover);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .module-card.selected {
             border-color: var(--primary-color);
-            background: rgba(255,255,255,0.05);
+            background-color: rgba(56, 189, 248, 0.05);
         }
 
         .module-checkbox {
-            margin-right: var(--spacing-md);
+            appearance: none;
             width: 24px;
             height: 24px;
-            accent-color: var(--primary-color);
+            border: 2px solid var(--on-surface-muted);
+            border-radius: 6px;
+            outline: none;
             cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+            flex-shrink: 0;
         }
 
-        .module-info {
-            flex-grow: 1;
+        .module-checkbox:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
         }
 
+        .module-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid #0f172a;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .module-info { flex-grow: 1; min-width: 0; }
+        
         .module-name {
             font-size: 16px;
             font-weight: 600;
-            margin-bottom: 2px;
+            color: var(--on-bg);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .module-details {
+            font-size: 12px;
+            color: var(--on-surface-muted);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .badge {
+            background-color: rgba(255,255,255,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
         }
 
         .module-filename {
             font-size: 12px;
-            color: #888;
-            word-break: break-all;
-        }
-
-        /* Settings Styles */
-        .settings-group {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-md);
-            margin-bottom: var(--spacing-md);
-        }
-
-        .settings-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .settings-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .settings-label {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .settings-desc {
-            font-size: 12px;
-            color: #888;
+            color: var(--on-surface-muted);
+            opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             margin-top: 4px;
         }
 
-        /* Toggle Switch */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 26px;
-        }
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #555;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: var(--primary-color);
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-
-        input[type="time"] {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: var(--on-bg);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 14px;
-        }
-
-        /* Buttons & status */
         .btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            background: var(--primary-color);
-            color: var(--bg-color);
+            background-color: var(--primary-color);
+            color: #0f172a;
             border: none;
             padding: 16px;
             border-radius: var(--border-radius);
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s, opacity 0.2s;
-            margin-top: auto;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn:active {
-            transform: scale(0.98);
+        .btn:hover:not(:disabled) {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
         }
 
         .btn:disabled {
-            background: #555;
-            color: #888;
+            background-color: var(--surface-color);
+            color: var(--on-surface-muted);
             cursor: not-allowed;
-            transform: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
         }
         
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: var(--on-bg);
-            margin-top: var(--spacing-md);
-        }
-
         .btn-secondary:hover:not(:disabled) {
-            background: rgba(255,255,255,0.15);
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--primary-hover);
         }
 
-        .status-box {
-            margin-top: var(--spacing-md);
-            padding: var(--spacing-md);
+        .floating-action {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 560px;
+            z-index: 100;
+        }
+
+        /* Settings */
+        .settings-card {
+            background-color: var(--surface-color);
             border-radius: var(--border-radius);
-            text-align: center;
-            font-size: 14px;
-            font-weight: 500;
-            display: none;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .status-info { background: rgba(3, 218, 198, 0.1); color: var(--secondary-color); border: 1px solid rgba(3, 218, 198, 0.2); }
-        .status-error { background: rgba(207, 102, 121, 0.1); color: var(--error-color); border: 1px solid rgba(207, 102, 121, 0.2); }
-        .status-success { background: rgba(0, 200, 83, 0.1); color: var(--success-color); border: 1px solid rgba(0, 200, 83, 0.2); }
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .settings-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .settings-label { font-weight: 600; font-size: 16px; }
+        .settings-desc { font-size: 13px; color: var(--on-surface-muted); margin-top: 4px; max-width: 80%; }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1); transition: .3s; border-radius: 26px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: #fff; transition: .3s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(22px); background-color: #0f172a; }
+
+        input[type="time"] {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--on-bg);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+        }
+        
+        input[type="time"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        /* Status & Loading */
+        .status-box {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .status-info { background-color: rgba(56, 189, 248, 0.1); color: var(--primary-color); border: 1px solid rgba(56, 189, 248, 0.2); }
+        .status-success { background-color: rgba(34, 197, 94, 0.1); color: var(--success-color); border: 1px solid rgba(34, 197, 94, 0.2); }
+        .status-error { background-color: rgba(239, 68, 68, 0.1); color: var(--error-color); border: 1px solid rgba(239, 68, 68, 0.2); }
 
         .loading-spinner {
-            display: inline-block;
             width: 20px;
             height: 20px;
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
-            border-top-color: #fff;
+            border-top-color: currentColor;
             animation: spin 1s ease-in-out infinite;
-            margin-right: 10px;
         }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .loader-container {
+        #loading {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 40px 0;
-            color: #aaa;
+            gap: 12px;
+            margin-top: 40px;
+            color: var(--on-surface-muted);
+        }
+
+        #loading .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border-top-color: var(--primary-color);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--on-surface-muted);
+            display: none;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            color: var(--on-surface-muted);
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
         <header>
             <h1>Morphe Manager</h1>
-            <div class="subtitle">By Arvind Ji (The New Perfectionist)</div>
+            <div class="subtitle">Root Module Installer</div>
+            <div class="version-badge" id="appVersionBadge">v1.0.0</div>
         </header>
 
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('modules')">Modules</div>
-            <div class="tab" onclick="switchTab('settings')">Auto-Update Settings</div>
+            <div class="tab active" onclick="switchTab('modules', event)">Modules</div>
+            <div class="tab" onclick="switchTab('settings', event)">Settings</div>
         </div>
 
+        <!-- Modules Tab -->
         <div id="tab-modules" class="tab-content active">
-            <div id="loading" class="loader-container">
-                <div class="loading-spinner" style="width:30px; height:30px; border-width: 4px; border-top-color: var(--primary-color); margin-bottom: 15px;"></div>
-                <div>Fetching latest builds from GitHub...</div>
+            <div class="search-container">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search modules..." oninput="filterModules()">
             </div>
 
-            <div class="module-list" id="appList" style="display: none;">
-                <!-- Modules injected here -->
+            <div id="loading">
+                <div class="loading-spinner"></div>
+                <div>Fetching latest modules...</div>
+            </div>
+            
+            <div id="emptyState" class="empty-state">
+                <svg style="width: 48px; height: 48px; opacity: 0.5; margin-bottom: 12px; display: inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <div id="emptyStateMsg">No modules match your search.</div>
             </div>
 
-            <button id="installBtn" class="btn" style="display: none;" disabled>Select Modules to Flash</button>
+            <div class="app-list" id="appList" style="display: none;"></div>
+            
             <div id="status-modules" class="status-box"></div>
         </div>
 
+        <!-- Settings Tab -->
         <div id="tab-settings" class="tab-content">
-            <div class="settings-group">
+            <div class="settings-card">
                 <div class="settings-row">
                     <div>
-                        <div class="settings-label">Enable Auto-Update</div>
-                        <div class="settings-desc">Automatically fetch and flash the latest root modules in the background.</div>
+                        <div class="settings-label">Auto-Update Daemon</div>
+                        <div class="settings-desc">Silently download and flash the latest root modules in the background.</div>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="autoUpdateToggle">
@@ -351,22 +463,32 @@
             <button id="saveSettingsBtn" class="btn btn-secondary">Save Settings</button>
             <div id="status-settings" class="status-box"></div>
         </div>
+        
+        <!-- Floating Action Button -->
+        <div class="floating-action" id="floatingAction" style="display: none;">
+            <button id="installBtn" class="btn" disabled>Select Modules to Flash</button>
+        </div>
     </div>
 
     <script>
         const REPO = 'official-Arvind/Morphe-AutoBuilds';
         let availableModules = [];
+        let selectedUrls = new Set();
 
-        // Tab Switching
-        function switchTab(tab) {
+        function switchTab(tab, event) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             
             event.target.classList.add('active');
             document.getElementById(`tab-${tab}`).classList.add('active');
+            
+            if(tab === 'modules' && availableModules.length > 0) {
+                document.getElementById('floatingAction').style.display = 'block';
+            } else {
+                document.getElementById('floatingAction').style.display = 'none';
+            }
         }
 
-        // Fetch GitHub Release
         async function fetchLatestRelease() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
@@ -376,7 +498,8 @@
                 availableModules = release.assets.filter(asset => asset.name.endsWith('.zip') && !asset.name.includes('morphe-manager'));
                 
                 if (availableModules.length > 0) {
-                    renderAppList();
+                    renderAppList(availableModules);
+                    document.getElementById('floatingAction').style.display = 'block';
                 } else {
                     showStatus('modules', 'No Magisk modules found in the latest release.', 'error');
                     document.getElementById('loading').style.display = 'none';
@@ -384,25 +507,72 @@
             } catch (e) {
                 showStatus('modules', `Network Error: ${e.message}`, 'error');
                 document.getElementById('loading').style.display = 'none';
-                console.error(e);
+            }
+        }
+        
+        function formatBytes(bytes, decimals = 1) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        function extractVersion(filename) {
+            const match = filename.match(/-v([\d\.]+[\w\.\-\(\) ]*?)\.zip$/);
+            return match ? "v" + match[1] : "Unknown Version";
+        }
+        
+        function extractArch(filename) {
+            if (filename.includes('arm64-v8a')) return 'arm64';
+            if (filename.includes('armeabi-v7a')) return 'arm32';
+            return 'universal';
+        }
+
+        function filterModules() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = availableModules.filter(mod => {
+                const cleanName = (mod.name.split('-')[0] || mod.name).toLowerCase();
+                return cleanName.includes(query) || mod.name.toLowerCase().includes(query);
+            });
+            renderAppList(filtered);
+            
+            if (filtered.length === 0 && availableModules.length > 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('appList').style.display = 'none';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+                document.getElementById('appList').style.display = 'flex';
             }
         }
 
-        function renderAppList() {
+        function renderAppList(modulesToRender) {
             const listEl = document.getElementById('appList');
             listEl.innerHTML = '';
             
-            availableModules.forEach(mod => {
+            modulesToRender.forEach(mod => {
                 let cleanName = mod.name.split('-')[0] || mod.name;
-                // Capitalize
                 cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
                 
+                const version = extractVersion(mod.name);
+                const arch = extractArch(mod.name);
+                const size = formatBytes(mod.size);
+                
+                const isChecked = selectedUrls.has(mod.browser_download_url) ? 'checked' : '';
+                const selectedClass = isChecked ? 'selected' : '';
+                
                 const card = document.createElement('label');
-                card.className = 'module-card';
+                card.className = `module-card ${selectedClass}`;
                 card.innerHTML = `
-                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="updateBtn()">
+                    <input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="updateBtn(this)" ${isChecked}>
                     <div class="module-info">
                         <div class="module-name">${cleanName}</div>
+                        <div class="module-details">
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);">${version}</span>
+                            <span class="badge">${arch}</span>
+                            <span class="badge">${size}</span>
+                        </div>
                         <div class="module-filename">${mod.name}</div>
                     </div>
                 `;
@@ -411,11 +581,22 @@
             
             document.getElementById('loading').style.display = 'none';
             listEl.style.display = 'flex';
-            document.getElementById('installBtn').style.display = 'block';
+            updateBtn(null);
         }
 
-        function updateBtn() {
-            const checkedCount = document.querySelectorAll('.module-checkbox:checked').length;
+        function updateBtn(checkboxElement) {
+            if (checkboxElement) {
+                const card = checkboxElement.closest('.module-card');
+                if (checkboxElement.checked) {
+                    card.classList.add('selected');
+                    selectedUrls.add(checkboxElement.value);
+                } else {
+                    card.classList.remove('selected');
+                    selectedUrls.delete(checkboxElement.value);
+                }
+            }
+
+            const checkedCount = selectedUrls.size;
             const btn = document.getElementById('installBtn');
             if (checkedCount > 0) {
                 btn.disabled = false;
@@ -429,18 +610,16 @@
         function showStatus(tab, message, type, sticky = false) {
             const box = document.getElementById(`status-${tab}`);
             box.className = `status-box status-${type}`;
-            box.innerText = message;
+            box.innerHTML = message;
             box.style.display = 'block';
             if (!sticky) {
                 setTimeout(() => { box.style.display = 'none'; }, 5000);
             }
         }
 
-        // Install Action
         document.getElementById('installBtn').addEventListener('click', async () => {
-            const checked = document.querySelectorAll('.module-checkbox:checked');
-            const urls = Array.from(checked).map(cb => cb.value);
-            if (urls.length === 0) return;
+            if (selectedUrls.size === 0) return;
+            const urls = Array.from(selectedUrls);
             
             const btn = document.getElementById('installBtn');
             btn.disabled = true;
@@ -457,18 +636,15 @@
                 if (res.ok && text.includes("SUCCESS")) {
                     showStatus('modules', "Flash successful! Rebooting device now...", 'success', true);
                 } else {
-                    showStatus('modules', `Installation failed: ${text}`, 'error', true);
-                    btn.disabled = false;
-                    btn.innerText = "Retry Installation";
+                    showStatus('modules', `Installation failed:<br><pre style="margin-top:8px; font-size:11px; white-space:pre-wrap; background:rgba(0,0,0,0.2); padding:8px; border-radius:4px;">${text}</pre>`, 'error', true);
+                    updateBtn(null);
                 }
             } catch (e) {
                 showStatus('modules', `Communication error: ${e.message}`, 'error', true);
-                btn.disabled = false;
-                btn.innerText = "Retry Installation";
+                updateBtn(null);
             }
         });
 
-        // Settings Logic
         const autoUpdateToggle = document.getElementById('autoUpdateToggle');
         const timeRow = document.getElementById('timeRow');
         
@@ -522,7 +698,6 @@
             btn.disabled = false;
         });
 
-        // Init
         fetchLatestRelease();
         loadSettings();
     </script>

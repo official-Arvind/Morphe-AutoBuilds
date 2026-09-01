@@ -184,8 +184,8 @@ jobs:
           **Source:** ${{ inputs.source }}
           
           Auto-updates daily at 6 AM UTC.
-          EOF
-          
+EOF
+
           # 3. PERFORM UPDATE (CLOBBER) OR CREATE
           if [ "${{ steps.check-release.outputs.release_exists }}" == "true" ]; then
             echo "⬆️ Uploading new assets (clobbering existing)..."

@@ -19,7 +19,7 @@ def generate_notes():
     # Filenames are typically: {app_name}-{arch}-patch-v{version}.apk or -root-{name}-v{version}.zip
     apps = defaultdict(list)
     for asset in assets:
-        if asset == "manifest.json" or asset == "morphe-manager.zip":
+        if asset in ["manifest.json", "morphe-manager.zip", "update.json"]:
             apps["System / Core"].append(asset)
             continue
         

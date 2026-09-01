@@ -330,11 +330,54 @@ jobs:
 
       - name: Build Morphe Manager
         if: steps.check-apks.outputs.skip_release == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ -d "morphe_manager" ]; then
-            cd morphe_manager
-            zip -r9 ../release-apks/morphe-manager.zip .
-            cd ..
+            # Calculate a robust hash of the clean morphe_manager directory
+            DIR_HASH=$(find morphe_manager -type f -exec sha256sum {} + | sort | sha256sum | awk '{print $1}')
+            echo "Current morphe_manager hash: $DIR_HASH"
+            
+            OLD_HASH=""
+            # Fetch existing update.json to get the last hash
+            if gh release view latest >/dev/null 2>&1; then
+              if gh release download latest -p "update.json" -D /tmp >/dev/null 2>&1; then
+                OLD_HASH=$(grep -o '"hash": *"[^"]*"' /tmp/update.json | head -n 1 | cut -d'"' -f4 || echo "")
+                echo "Released morphe_manager hash: $OLD_HASH"
+              fi
+            fi
+            
+            if [ "$DIR_HASH" = "$OLD_HASH" ] && [ -n "$DIR_HASH" ]; then
+              echo "✅ Morphe Manager is unchanged. Skipping build."
+            else
+              echo "🔄 Morphe Manager changed or no previous release. Rebuilding..."
+              
+              NEW_VC=$(date +%y%m%d%H)
+              NEW_VN="v$(date +%Y.%m.%d)"
+              
+              # Update module.prop
+              sed -i "s/^version=.*/version=$NEW_VN/" morphe_manager/module.prop
+              sed -i "s/^versionCode=.*/versionCode=$NEW_VC/" morphe_manager/module.prop
+              
+              # Update index.html version badge
+              sed -i "s/id=\"appVersionBadge\">.*<\/div>/id=\"appVersionBadge\">$NEW_VN<\/div>/" morphe_manager/www/index.html
+              
+              # Create zip
+              cd morphe_manager
+              zip -r9 ../release-apks/morphe-manager.zip .
+              cd ..
+              
+              # Create update.json for Magisk
+              cat << EOF > release-apks/update.json
+          {
+            "version": "$NEW_VN",
+            "versionCode": $NEW_VC,
+            "zipUrl": "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/latest/morphe-manager.zip",
+            "changelog": "https://raw.githubusercontent.com/official-Arvind/Morphe-AutoBuilds/main/release_notes.md",
+            "hash": "$DIR_HASH"
+          }
+EOF
+            fi
           fi
       - name: Generate Release Notes
         if: steps.check-apks.outputs.skip_release == 'false'
@@ -357,6 +400,10 @@ jobs:
 
           if [ -f ./release-apks/manifest.json ]; then
             echo "manifest.json" >> current_assets.txt
+          fi
+
+          if [ -f ./release-apks/update.json ]; then
+            echo "update.json" >> current_assets.txt
           fi
 
           sort -u current_assets.txt > release_assets.txt
@@ -388,6 +435,10 @@ jobs:
           if [ -f ./release-apks/manifest.json ]; then
             ASSETS+=( ./release-apks/manifest.json )
             echo "📎 Including manifest.json"
+          fi
+          if [ -f ./release-apks/update.json ]; then
+            ASSETS+=( ./release-apks/update.json )
+            echo "📎 Including update.json"
           fi
 
           if [ "${{ steps.check-release.outputs.release_exists }}" = "true" ]; then
