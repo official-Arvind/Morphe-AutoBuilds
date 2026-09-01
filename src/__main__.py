@@ -333,24 +333,28 @@ def main():
                 zip_path = magisk.create_magisk_module(root_apk_path, app_name, version, source, package_name)
                 if zip_path:
                     print(f"✅ Built Magisk Module: {Path(zip_path).name}")
-                Path(root_apk_path).unlink(missing_ok=True) # delete root apk, keep zip
-
-        
-        # Summary
+                Path(root_apk_path).unlink(missing_ok=True) # delete root apk,        # Summary
         print(f"\n🎯 Built {len(built_apks)} APK(s) for {app_name}:")
         for apk in built_apks:
-            print(f"  📱 {Path(apk).name}")
+            print(f"  ✅ {Path(apk).name}")
         
+        # We need to track if AT LEAST ONE artifact was built (either non-root apk or root zip)
+        # However, built_apks only tracks non-root APKs. We can just check if run_build succeeded.
+        # Actually, if built_apks is empty and no root apks were generated, fail.
+        # But wait, root_apk_path is local to the loop. 
+        # A simple way: just keep track of total_success
     else:
         # Fallback to single universal build
         logging.warning("arch-config.json not found, building universal only")
         apk_path = run_build(app_name, source, "universal", is_root=False)
         if apk_path:
             print(f"🎯 Final APK path: {apk_path}")
+            built_apks = [apk_path]
+        else:
+            built_apks = []
         
         root_apk_path = run_build(app_name, source, "universal", is_root=True)
         if root_apk_path:
-
             package_name = "unknown"
             for p_conf in Path("apps").rglob(f"{app_name}.json"):
                 try:
@@ -364,9 +368,16 @@ def main():
             zip_path = magisk.create_magisk_module(root_apk_path, app_name, version, source, package_name)
             if zip_path:
                 print(f"🎯 Final Magisk Module path: {zip_path}")
+                built_apks.append(zip_path)
             Path(root_apk_path).unlink(missing_ok=True)
+
+    # Fail the CI if NOTHING was built
+    if not built_apks and not any(Path(".").glob("*.zip")):
+        logging.error(f"❌ Failed to build ANY artifacts for {app_name}.")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
+    import sys
     main()
 
