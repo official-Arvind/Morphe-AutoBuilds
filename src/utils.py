@@ -592,6 +592,9 @@ def check_apk_integrity(apk_path: Path) -> bool:
             bad_file = z.testzip()
             if bad_file is not None:
                 return False
+            if 'AndroidManifest.xml' not in z.namelist():
+                logging.warning('AndroidManifest.xml missing from APK')
+                return False
         return True
     except Exception:
         return False

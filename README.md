@@ -133,3 +133,18 @@ python -m src
   <strong>Made with absolute perfection by Arvind Ji.</strong><br>
   <em>Never manually patch or update an app again.</em>
 </div>
+
+---
+
+## ⚠️ Disclaimer & Legal Notice
+
+**This repository is strictly for educational and research purposes.** 
+
+Morphe AutoBuilds is an automated build pipeline. **No proprietary APKs, copyrighted applications, or modified binaries are hosted or stored within this repository's source code.** The scripts merely download publicly available tools and unmodified files from third-party hosting sites, process them locally inside temporary GitHub Actions containers, and output the results. We do not own, develop, or hold copyright over any of the third-party applications or patching frameworks utilized.
+
+### Notice to Rights Holders (DMCA / Takedown Requests)
+If you are the copyright owner (or represent the owner) of an application and believe that this automated build pipeline infringes upon your rights or violates your Terms of Service, we are fully willing to comply with your request. 
+
+Please **do not issue an immediate DMCA strike to GitHub**. Instead, kindly send a direct removal request to my email, and I will swiftly blacklist your specific application from this build pipeline and delete any related automated releases.
+
+📩 **Contact Email:** `Itz.arvindji@gmail.com`
