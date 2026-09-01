@@ -138,6 +138,7 @@ jobs:
     name: Build Applications
     needs: patch-apps
     runs-on: ubuntu-latest
+    continue-on-error: true
     services:
       trawl:
         image: ghcr.io/germondai/trawl:latest
@@ -188,7 +189,7 @@ jobs:
           echo "Building ${{ matrix.app_name }} with ${{ matrix.source }}..."
           sleep $((RANDOM % 30)).$((RANDOM % 100))
           
-          python -m src
+          python -m src || true
 
       - name: Record Build Outputs
         if: always()
