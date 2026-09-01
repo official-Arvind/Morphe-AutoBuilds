@@ -1,4 +1,6 @@
 #!/system/bin/sh
+export PATH="/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
+
 echo "Content-type: application/json"
 echo ""
 

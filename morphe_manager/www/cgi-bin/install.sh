@@ -1,4 +1,6 @@
 #!/system/bin/sh
+export PATH="/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
+
 echo "Content-type: text/plain"
 echo ""
 
@@ -34,14 +36,21 @@ download_file() {
 flash_module() {
     local ZIP="$1"
     local LOG="$2"
+
     if command -v magisk >/dev/null 2>&1; then
         magisk --install-module "$ZIP" > "$LOG" 2>&1
     elif command -v ksud >/dev/null 2>&1; then
         ksud module install "$ZIP" > "$LOG" 2>&1
     elif command -v apatch >/dev/null 2>&1; then
         apatch module install "$ZIP" > "$LOG" 2>&1
+    elif [ -f "/data/adb/magisk/magisk" ]; then
+        /data/adb/magisk/magisk --install-module "$ZIP" > "$LOG" 2>&1
+    elif [ -f "/data/adb/ksu/ksud" ]; then
+        /data/adb/ksu/ksud module install "$ZIP" > "$LOG" 2>&1
+    elif [ -f "/data/adb/apatch/apatch" ]; then
+        /data/adb/apatch/apatch module install "$ZIP" > "$LOG" 2>&1
     else
-        echo "ERROR: Neither Magisk, KernelSU, nor APatch detected. Are you even rooted?" > "$LOG"
+        echo "ERROR: Neither Magisk, KernelSU, nor APatch detected. Are you even rooted? (PATH=$PATH)" > "$LOG"
         return 1
     fi
 }
