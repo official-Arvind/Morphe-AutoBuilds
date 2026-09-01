@@ -1,0 +1,95 @@
+name: Build Morphe Manager
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-manager:
+    name: Build & Release Manager
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Increment Version
+        id: version
+        run: |
+          # Extract current version
+          CUR_VERSION=$(grep "^version=" morphe_manager/module.prop | cut -d'=' -f2)
+          CUR_CODE=$(grep "^versionCode=" morphe_manager/module.prop | cut -d'=' -f2)
+          
+          # Increment version (e.g. 1.0 -> 1.1)
+          NEW_VERSION=$(awk "BEGIN {print $CUR_VERSION + 0.1}")
+          # Make sure it formats cleanly (e.g. 1.1, 1.2, not 1.1000000)
+          NEW_VERSION=$(printf "%.1f" $NEW_VERSION)
+          
+          # Increment versionCode (+1)
+          NEW_CODE=$((CUR_CODE + 1))
+          
+          echo "Updating version from $CUR_VERSION ($CUR_CODE) -> $NEW_VERSION ($NEW_CODE)"
+          
+          # Update module.prop
+          sed -i "s/^version=.*/version=$NEW_VERSION/" morphe_manager/module.prop
+          sed -i "s/^versionCode=.*/versionCode=$NEW_CODE/" morphe_manager/module.prop
+          
+          # Update index.html version badge
+          sed -i "s/id=\"appVersionBadge\">.*<\/div>/id=\"appVersionBadge\">v$NEW_VERSION<\/div>/" morphe_manager/www/index.html
+          
+          # Output for subsequent steps
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
+
+      - name: Create WebUI Action Script
+        run: |
+          cat << 'ACTION' > morphe_manager/action.sh
+          #!/system/bin/sh
+          # Launch WebUI via Intent
+          am start -a android.intent.action.VIEW -d "http://127.0.0.1:8080"
+          ACTION
+          chmod +x morphe_manager/action.sh
+          
+      - name: Build Module Zip
+        run: |
+          mkdir -p dist
+          cd morphe_manager
+          zip -r9 ../dist/morphe-manager-v${{ steps.version.outputs.new_version }}.zip .
+          cd ..
+          
+          # Create update.json for Magisk
+          jq -n \
+            --arg v "${{ steps.version.outputs.new_version }}" \
+            --argjson vc "${{ steps.version.outputs.new_code }}" \
+            --arg z "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/morphe-manager/morphe-manager-v${{ steps.version.outputs.new_version }}.zip" \
+            --arg c "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/tag/morphe-manager" \
+            '{version: $v, versionCode: $vc, zipUrl: $z, changelog: $c}' > dist/update.json
+            
+      - name: Commit Version Bump
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add morphe_manager/module.prop morphe_manager/www/index.html morphe_manager/action.sh
+          git commit -m "chore: bump morphe manager version to v${{ steps.version.outputs.new_version }}"
+          git push
+          
+      - name: Release Manager Module
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RELEASE_TAG="morphe-manager"
+          NOTES="### Morphe Manager v${{ steps.version.outputs.new_version }}\n\n- Incremented version automatically via workflow\n- Access the manager via the 'Action' button in APatch/Magisk, or visit http://127.0.0.1:8080 directly."
+          
+          if gh release view $RELEASE_TAG >/dev/null 2>&1; then
+            echo "Updating existing release..."
+            gh release edit $RELEASE_TAG --prerelease -n "$NOTES" --title "Morphe Manager v${{ steps.version.outputs.new_version }}"
+            # Upload and overwrite previous assets
+            gh release upload $RELEASE_TAG dist/* --clobber
+          else
+            echo "Creating new prerelease..."
+            echo -e "$NOTES" > release_notes.txt
+            gh release create $RELEASE_TAG dist/* --prerelease --title "Morphe Manager v${{ steps.version.outputs.new_version }}" -F release_notes.txt
+          fi
