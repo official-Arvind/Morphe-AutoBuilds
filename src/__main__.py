@@ -209,7 +209,9 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                         "--out", str(output_apk), str(input_apk),
                         *exclude_patches, *include_patches
                     ]
-                    utils.run_process(morphe_cmd, capture=True, stream=True)
+                    output = utils.run_process(morphe_cmd, capture=True, stream=True)
+                    if output and "Applying 0 patches" in output:
+                        raise RuntimeError("Patching failed: 0 patches applied (incorrect version or fake APK?).")
                 else:
                     logging.info("🔧 Using ReVanced patching system...")
                     cli_name = Path(cli).name.lower()
@@ -218,21 +220,24 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                     )
 
                     if is_revanced_v6_or_newer:
-                        utils.run_process([
+                        output = utils.run_process([
                             "java", "-jar", str(cli),
                             "patch", "-p", str(patches), "-b",
                             "--out", str(output_apk), str(input_apk),
                             *exclude_patches, *include_patches
                         ], capture=True, stream=True)
                     else:
-                        utils.run_process([
+                        output = utils.run_process([
                             "java", "-jar", str(cli),
                             "patch", "--patches", str(patches),
                             "--out", str(output_apk), str(input_apk),
                             *exclude_patches, *include_patches
                         ], capture=True, stream=True)
+                    
+                    if output and (" 0 patches" in output or "Applying 0 patches" in output):
+                        raise RuntimeError("Patching failed: 0 patches applied.")
 
-            except subprocess.CalledProcessError as e:
+            except (subprocess.CalledProcessError, RuntimeError) as e:
                 input_apk.unlink(missing_ok=True)
                 output_apk.unlink(missing_ok=True)
 

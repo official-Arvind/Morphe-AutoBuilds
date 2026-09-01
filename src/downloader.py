@@ -205,6 +205,10 @@ def download_platform(
                 continue
             try:
                 filepath = download_resource(download_link)
+                if filepath.stat().st_size < 500_000:
+                    size_kb = filepath.stat().st_size // 1024
+                    filepath.unlink()
+                    raise ValueError(f"Downloaded APK is suspiciously small ({size_kb} KB), likely a fake/installer wrapper.")
                 return filepath, version, candidates
             except Exception as e:
                 last_error = e
