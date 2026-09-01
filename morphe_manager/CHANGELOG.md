@@ -1,7 +1,6 @@
-### v
-- Background WebUI flashing improvements
-- Built-in root binary detection fixes
-- Bundled static busybox for universal compatibility
+### v1.7
+- Fully resolved "Download failed or ZIP corrupt" errors by chaining HTTP clients.
+- Bypassed strict SSL certificate validation missing in barebones root sandboxes (`curl -k`, `wget --no-check-certificate`).
 
 ### v1.6
 - Complete APatch support & exhaustive legacy root detection (supports absolute binary fallback for Magisk, KernelSU, APatch/apd across 18+ different system paths).

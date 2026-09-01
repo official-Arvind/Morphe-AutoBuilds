@@ -12,14 +12,27 @@ rm -f "$REQ_FILE" "$PROG_FILE"
 download_file() {
     local FILE="$1"
     local URL="$2"
+    local SUCCESS=false
+
     if command -v curl >/dev/null 2>&1; then
-        curl -f -L -s -o "$FILE" "$URL"
-    elif command -v wget >/dev/null 2>&1; then
-        wget -q -O "$FILE" "$URL"
-    elif command -v busybox >/dev/null 2>&1; then
-        busybox wget -q -O "$FILE" "$URL"
-    else
-        echo "ERROR: Missing download binaries." >> "$PROG_FILE"
+        if curl -k -f -L -s -o "$FILE" "$URL"; then
+            SUCCESS=true
+        fi
+    fi
+
+    if [ "$SUCCESS" = "false" ] && command -v wget >/dev/null 2>&1; then
+        if wget --no-check-certificate -q -O "$FILE" "$URL"; then
+            SUCCESS=true
+        fi
+    fi
+
+    if [ "$SUCCESS" = "false" ] && command -v busybox >/dev/null 2>&1; then
+        if busybox wget --no-check-certificate -q -O "$FILE" "$URL"; then
+            SUCCESS=true
+        fi
+    fi
+
+    if [ "$SUCCESS" = "false" ]; then
         return 1
     fi
 }
@@ -89,7 +102,7 @@ while true; do
             echo "[-] Downloading module $COUNTER ($URL)..." >> "$PROG_FILE"
             download_file "$FILEPATH" "$URL"
             
-            if [ -f "$FILEPATH" ] && unzip -t "$FILEPATH" > /dev/null 2>&1; then
+            if [ -f "$FILEPATH" ] && (unzip -t "$FILEPATH" > /dev/null 2>&1 || busybox unzip -t "$FILEPATH" > /dev/null 2>&1); then
                 echo "[-] Downloaded successfully. Flashing..." >> "$PROG_FILE"
                 
                 # Append output of flash directly to progress
