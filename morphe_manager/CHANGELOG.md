@@ -1,3 +1,8 @@
+### v
+- Background WebUI flashing improvements
+- Built-in root binary detection fixes
+- Bundled static busybox for universal compatibility
+
 ### v1.9
 - Crucial Fix: Standardized root installation by switching to bind mounts (`post-fs-data.sh`). Apps like Facebook are no longer forced into `/system/app`, preventing permissions-related crashes.
 - The build engine now natively extracts the package name from `apps/` configs to dynamically mount the patched APK directly over the user's base APK.
