@@ -1,5 +1,5 @@
 #!/system/bin/sh
-export PATH="/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
+export PATH="/data/adb/modules/morphe_manager/bin:/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
 
 TMP_DIR="/data/local/tmp/morphe_flasher"
 REQ_FILE="$TMP_DIR/request.txt"
@@ -26,20 +26,47 @@ download_file() {
 
 flash_module() {
     local ZIP="$1"
-    if command -v magisk >/dev/null 2>&1; then
-        magisk --install-module "$ZIP"
-    elif command -v ksud >/dev/null 2>&1; then
-        ksud module install "$ZIP"
-    elif command -v apatch >/dev/null 2>&1; then
-        apatch module install "$ZIP"
-    elif [ -f "/data/adb/magisk/magisk" ]; then
-        /data/adb/magisk/magisk --install-module "$ZIP"
-    elif [ -f "/data/adb/ksu/ksud" ]; then
-        /data/adb/ksu/ksud module install "$ZIP"
-    elif [ -f "/data/adb/apatch/apatch" ]; then
-        /data/adb/apatch/apatch module install "$ZIP"
+    local INSTALLER=""
+    local CMD=""
+
+    # 1. Search for Magisk (Latest & Legacy paths)
+    for p in "/data/adb/magisk/magisk" "/sbin/magisk" "/system/bin/magisk" "/system/xbin/magisk"; do
+        if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="--install-module"; break; fi
+    done
+
+    # 2. Search for KernelSU (ksud)
+    if [ -z "$INSTALLER" ]; then
+        for p in "/data/adb/ksu/bin/ksud" "/data/adb/ksu/ksud" "/system/bin/ksud" "/sbin/ksud" "/system/xbin/ksud" "/data/adb/ksu/bin/ksu"; do
+            if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="module install"; break; fi
+        done
+    fi
+
+    # 3. Search for APatch (apatch / apd)
+    if [ -z "$INSTALLER" ]; then
+        for p in "/data/adb/ap/bin/apatch" "/data/adb/ap/bin/apd" "/data/adb/apatch/apatch" "/data/adb/apatch/apd" "/system/bin/apatch" "/system/bin/apd" "/sbin/apatch" "/sbin/apd"; do
+            if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="module install"; break; fi
+        done
+    fi
+
+    # 4. Fallback to env PATH
+    if [ -z "$INSTALLER" ]; then
+        if command -v magisk >/dev/null 2>&1; then INSTALLER=$(command -v magisk); CMD="--install-module"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v ksud >/dev/null 2>&1; then INSTALLER=$(command -v ksud); CMD="module install"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v apatch >/dev/null 2>&1; then INSTALLER=$(command -v apatch); CMD="module install"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v apd >/dev/null 2>&1; then INSTALLER=$(command -v apd); CMD="module install"; fi
+    fi
+
+    if [ -n "$INSTALLER" ]; then
+        echo "Using root manager: $INSTALLER $CMD"
+        $INSTALLER $CMD "$ZIP"
     else
-        echo "ERROR: Neither Magisk, KernelSU, nor APatch detected. Are you even rooted? (PATH=$PATH)" 
+        echo "ERROR: Root manager binary not found! Tried Magisk, KernelSU, and APatch paths."
         return 1
     fi
 }

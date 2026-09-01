@@ -33,6 +33,8 @@ jobs:
           
           echo "Updating version from $CUR_VERSION ($CUR_CODE) -> $NEW_VERSION ($NEW_CODE)"
           
+          # Update CHANGELOG.md
+          echo -e "### v${{ steps.version.outputs.new_version }}\n- Background WebUI flashing improvements\n- Built-in root binary detection fixes\n- Bundled static busybox for universal compatibility\n\n$(cat morphe_manager/CHANGELOG.md 2>/dev/null)" > morphe_manager/CHANGELOG.md
           # Update module.prop
           sed -i "s/^version=.*/version=$NEW_VERSION/" morphe_manager/module.prop
           sed -i "s/^versionCode=.*/versionCode=$NEW_CODE/" morphe_manager/module.prop
@@ -53,6 +55,13 @@ jobs:
           ACTION
           chmod +x morphe_manager/action.sh
           
+      - name: Bundle Osm0sis Busybox
+        run: |
+          mkdir -p morphe_manager/bin
+          wget -q "https://github.com/Magisk-Modules-Repo/busybox-ndk/releases/download/13614/UPDATE-Busybox.Installer.v1.36.1-ALL-signed.zip" -O busybox.zip
+          unzip -j busybox.zip busybox-arm64 busybox-arm -d morphe_manager/bin/
+          chmod +x morphe_manager/bin/*
+          rm busybox.zip
       - name: Build Module Zip
         run: |
           mkdir -p dist
@@ -65,14 +74,14 @@ jobs:
             --arg v "${{ steps.version.outputs.new_version }}" \
             --argjson vc "${{ steps.version.outputs.new_code }}" \
             --arg z "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/morphe-manager/morphe-manager-v${{ steps.version.outputs.new_version }}.zip" \
-            --arg c "https://github.com/official-Arvind/Morphe-AutoBuilds/releases/tag/morphe-manager" \
+            --arg c "https://raw.githubusercontent.com/official-Arvind/Morphe-AutoBuilds/refs/heads/main/morphe_manager/CHANGELOG.md" \
             '{version: $v, versionCode: $vc, zipUrl: $z, changelog: $c}' > dist/update.json
             
       - name: Commit Version Bump
         run: |
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add morphe_manager/module.prop morphe_manager/www/index.html morphe_manager/action.sh
+          git add morphe_manager/module.prop morphe_manager/www/index.html morphe_manager/action.sh morphe_manager/CHANGELOG.md
           git commit -m "chore: bump morphe manager version to v${{ steps.version.outputs.new_version }}"
           git push
           

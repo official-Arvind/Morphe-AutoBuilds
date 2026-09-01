@@ -1,0 +1,14 @@
+### v1.6
+- Complete APatch support & exhaustive legacy root detection (supports absolute binary fallback for Magisk, KernelSU, APatch/apd across 18+ different system paths).
+
+### v1.5
+- Removed APK Auto-Updates (Root devices only need module updates).
+
+### v1.4
+- IPC Background daemon added for robust flashing.
+- Absolute root detection fixes.
+- Bundled Osm0sis busybox to fix download failures on barebones devices.
+
+### v1.2
+- Initial Magisk auto-update logic.
+- Web UI design improvements.

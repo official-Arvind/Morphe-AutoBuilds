@@ -1,10 +1,9 @@
 #!/system/bin/sh
-export PATH="/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
-
+export PATH="/data/adb/modules/morphe_manager/bin:/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
 CONFIG_FILE="/data/adb/morphe_config.json"
 REPO="official-Arvind/Morphe-AutoBuilds"
 
-# Kill any existing instance of auto_update daemon (prevent duplicates)
+# Kill any existing instance of auto_update daemon
 for pid in $(pgrep -f "auto_update.sh"); do
     if [ "$pid" != "$$" ]; then
         kill -9 $pid >/dev/null 2>&1
@@ -23,6 +22,53 @@ download_file() {
     fi
 }
 
+flash_module() {
+    local ZIP="$1"
+    local INSTALLER=""
+    local CMD=""
+
+    # 1. Search for Magisk (Latest & Legacy paths)
+    for p in "/data/adb/magisk/magisk" "/sbin/magisk" "/system/bin/magisk" "/system/xbin/magisk"; do
+        if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="--install-module"; break; fi
+    done
+
+    # 2. Search for KernelSU (ksud)
+    if [ -z "$INSTALLER" ]; then
+        for p in "/data/adb/ksu/bin/ksud" "/data/adb/ksu/ksud" "/system/bin/ksud" "/sbin/ksud" "/system/xbin/ksud" "/data/adb/ksu/bin/ksu"; do
+            if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="module install"; break; fi
+        done
+    fi
+
+    # 3. Search for APatch (apatch / apd)
+    if [ -z "$INSTALLER" ]; then
+        for p in "/data/adb/ap/bin/apatch" "/data/adb/ap/bin/apd" "/data/adb/apatch/apatch" "/data/adb/apatch/apd" "/system/bin/apatch" "/system/bin/apd" "/sbin/apatch" "/sbin/apd"; do
+            if [ -f "$p" ] && [ -x "$p" ]; then INSTALLER="$p"; CMD="module install"; break; fi
+        done
+    fi
+
+    # 4. Fallback to env PATH
+    if [ -z "$INSTALLER" ]; then
+        if command -v magisk >/dev/null 2>&1; then INSTALLER=$(command -v magisk); CMD="--install-module"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v ksud >/dev/null 2>&1; then INSTALLER=$(command -v ksud); CMD="module install"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v apatch >/dev/null 2>&1; then INSTALLER=$(command -v apatch); CMD="module install"; fi
+    fi
+    if [ -z "$INSTALLER" ]; then
+        if command -v apd >/dev/null 2>&1; then INSTALLER=$(command -v apd); CMD="module install"; fi
+    fi
+
+    if [ -n "$INSTALLER" ]; then
+        echo "Using root manager: $INSTALLER $CMD"
+        $INSTALLER $CMD "$ZIP"
+    else
+        echo "ERROR: Root manager binary not found! Tried Magisk, KernelSU, and APatch paths."
+        return 1
+    fi
+}
+
 while true; do
     # Sleep 10 minutes between checks
     sleep 600
@@ -33,10 +79,6 @@ while true; do
         
         if [ "$ENABLED" = "true" ] && [ -n "$TARGET_TIME" ]; then
             CURRENT_TIME=$(date +%H:%M)
-            
-            # Allow a small window to match (since we check every 10 min)
-            # The target time is like "03:00". We check if current time starts with the same hour, 
-            # and minutes are within the 10 min window.
             TH=${TARGET_TIME%:*}
             TM=${TARGET_TIME#*:}
             CH=${CURRENT_TIME%:*}
@@ -44,15 +86,12 @@ while true; do
             
             if [ "$TH" = "$CH" ]; then
                 DIFF=$(( 10#$CM - 10#$TM ))
-                # If current time is between Target and Target+9 minutes
+                # Within 10 min window
                 if [ "$DIFF" -ge 0 ] && [ "$DIFF" -lt 10 ]; then
-                    
-                    # We are in the update window! Trigger update!
                     TMP_DIR="/data/local/tmp/morphe_flasher"
                     rm -rf "$TMP_DIR"
                     mkdir -p "$TMP_DIR"
                     
-                    # Fetch latest release
                     download_file "$TMP_DIR/release.json" "https://api.github.com/repos/$REPO/releases/latest"
                     
                     if [ -f "$TMP_DIR/release.json" ]; then
@@ -77,7 +116,7 @@ while true; do
                                 FIRST=true
                                 while IFS= read -r ZIP; do
                                     if $FIRST; then
-                                        magisk --install-module "$ZIP"
+                                        flash_module "$ZIP"
                                         rm -f "$ZIP"
                                         FIRST=false
                                     else

@@ -1,6 +1,26 @@
 __pycache__/
-NUL
-package.json
 node_modules/
 package.json
-node_modules/
+
+# Build outputs
+dist/
+*.zip
+*.apk
+
+# Temporary files and scripts
+busybox_src/
+test_*.py
+patch_*.py
+fix_*.py
+strip_patch.py
+yaml.py
+release_assets.txt
+release_notes.md
+release_notes.txt
+
+# Module bins built dynamically
+morphe_manager/bin/
+
+# OS generated files
+.DS_Store
+Thumbs.db
