@@ -10,5 +10,6 @@ set_perm_recursive $MODPATH 0 0 0755 0644
 set_perm_recursive $MODPATH/www/cgi-bin 0 0 0755 0755
 set_perm $MODPATH/auto_update.sh 0 0 0755
 set_perm $MODPATH/service.sh 0 0 0755
+set_perm $MODPATH/daemon.sh 0 0 0755
 
 ui_print "- Done!"

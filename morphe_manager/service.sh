@@ -6,6 +6,8 @@ STATE_FILE="/data/adb/morphe_state.txt"
 
 # Start Auto-Update Daemon in the background
 sh $MODDIR/auto_update.sh &
+# Start IPC daemon for WebUI flashing
+sh $MODDIR/daemon.sh &
 
 # Check if we are in the middle of a double-flash operation
 if [ -f "$STATE_FILE" ]; then
