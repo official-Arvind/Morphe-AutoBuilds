@@ -613,4 +613,5 @@ def find_cli() -> Path | None:
     return find_file(list(Path('.').glob('*.jar')), contains='cli')
 
 def find_patches() -> Path | None:
-    return find_file(list(Path('.').glob('*.jar')), contains='patches')
+    files = list(Path('.').glob('*.jar')) + list(Path('.').glob('*.mpp')) + list(Path('.').glob('*.rvp'))
+    return find_file(files, contains='patches')

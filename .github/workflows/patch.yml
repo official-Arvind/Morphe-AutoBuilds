@@ -193,7 +193,7 @@ jobs:
           echo "Building ${{ matrix.app_name }} with ${{ matrix.source }}..."
           sleep $((RANDOM % 30)).$((RANDOM % 100))
           
-          python -m src || true
+          python -m src
 
       - name: Record Build Outputs
         if: always()
