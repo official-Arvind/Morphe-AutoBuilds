@@ -18,7 +18,8 @@ jobs:
   download-tools:
     name: Download Morphe Tools
     runs-on: ubuntu-latest
-    
+    if: ${{ false }}
+
     outputs:
       cache-key: ${{ steps.cache-key.outputs.cache-key }}
     steps:
@@ -46,7 +47,7 @@ jobs:
         id: cache-tools
         with:
           path: tools/
-          key: revanced-tools-v2-${{ hashFiles('patch-config.json', 'arch-config.json') }}
+          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
       
       - name: Generate Cache Key
         id: cache-key
@@ -55,6 +56,7 @@ jobs:
   check-updates:
     name: Check for Updates
     runs-on: ubuntu-latest
+
     outputs:
       has_updates: ${{ steps.check.outputs.has_updates }}
       build_matrix: ${{ steps.check.outputs.build_matrix }}
@@ -115,6 +117,7 @@ jobs:
     name: Read Configuration
     needs: check-updates
     runs-on: ubuntu-latest
+
     if: needs.check-updates.outputs.has_updates == 'true'
     outputs:
       matrix: ${{ steps.read-matrix.outputs.matrix }}
@@ -138,6 +141,7 @@ jobs:
     name: Build Applications
     needs: patch-apps
     runs-on: ubuntu-latest
+
     continue-on-error: true
     services:
       trawl:
@@ -160,7 +164,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: tools/
-          key: revanced-tools-v2-${{ hashFiles('patch-config.json', 'arch-config.json') }}
+          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -227,6 +231,7 @@ jobs:
     name: Create Single Release
     needs: [check-updates, build-apps]
     runs-on: ubuntu-latest
+
     if: always() && needs.check-updates.outputs.has_updates == 'true'
     permissions:
       contents: write
@@ -439,6 +444,7 @@ jobs:
     name: Cleanup Workflow Runs
     needs: [build-apps, create-single-release]
     runs-on: ubuntu-latest
+
     if: always()
     permissions:
       actions: write

@@ -53,6 +53,8 @@ def find_file(files: list[Path], prefix: str = None, suffix: str = None, contain
         # Skip excluded patterns
         if any(excl.lower() in file.name.lower() for excl in exclude):
             continue
+        if file.stat().st_size == 0:
+            continue
             
         # Check all criteria
         matches = True
@@ -601,7 +603,7 @@ def check_apk_integrity(apk_path: Path) -> bool:
 
 
 def find_cli() -> Path | None:
-    return find_file(list(Path('tools').glob('*.jar')), contains='cli')
+    return find_file(list(Path('.').glob('*.jar')), contains='cli')
 
 def find_patches() -> Path | None:
-    return find_file(list(Path('tools').glob('*.jar')), contains='patches')
+    return find_file(list(Path('.').glob('*.jar')), contains='patches')
