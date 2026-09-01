@@ -1,7 +1,7 @@
 id=morphe_manager
 name=Morphe Manager
-version=1.2
-versionCode=12
+version=1.3
+versionCode=13
 author=Arvind Ji (The New Perfectionist)
 description=Local Web UI to download and flash Morphe patched modules cleanly. Tap "Action" to launch WebUI or visit http://127.0.0.1:8080.
 updateJson=https://github.com/official-Arvind/Morphe-AutoBuilds/releases/download/morphe-manager/update.json
