@@ -313,7 +313,6 @@ def main():
                 for p_conf in Path("apps").rglob(f"{app_name}.json"):
                     try:
                         with p_conf.open() as f_conf:
-                            import json
                             package_name = json.load(f_conf).get("package", "unknown")
                             break
                     except:
@@ -343,7 +342,6 @@ def main():
             for p_conf in Path("apps").rglob(f"{app_name}.json"):
                 try:
                     with p_conf.open() as f_conf:
-                        import json
                         package_name = json.load(f_conf).get("package", "unknown")
                         break
                 except:
