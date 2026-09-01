@@ -317,7 +317,9 @@ def main():
                             break
                     except:
                         pass
-                zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest", source, package_name)
+                version_match = re.search(r"-v([\d\.]+)\.apk$", str(root_apk_path))
+                version = version_match.group(1) if version_match else "latest"
+                zip_path = magisk.create_magisk_module(root_apk_path, app_name, version, source, package_name)
                 if zip_path:
                     print(f"✅ Built Magisk Module: {Path(zip_path).name}")
                 Path(root_apk_path).unlink(missing_ok=True) # delete root apk, keep zip
@@ -346,7 +348,9 @@ def main():
                         break
                 except:
                     pass
-            zip_path = magisk.create_magisk_module(root_apk_path, app_name, "latest", source, package_name)
+            version_match = re.search(r"-v([\d\.]+)\.apk$", str(root_apk_path))
+            version = version_match.group(1) if version_match else "latest"
+            zip_path = magisk.create_magisk_module(root_apk_path, app_name, version, source, package_name)
             if zip_path:
                 print(f"🎯 Final Magisk Module path: {zip_path}")
             Path(root_apk_path).unlink(missing_ok=True)
@@ -354,3 +358,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

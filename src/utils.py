@@ -598,3 +598,10 @@ def check_apk_integrity(apk_path: Path) -> bool:
         return True
     except Exception:
         return False
+
+
+def find_cli() -> Path | None:
+    return find_file(list(Path('.').glob('*.jar')), contains='cli')
+
+def find_patches() -> Path | None:
+    return find_file(list(Path('.').glob('*.jar')), contains='patches')
