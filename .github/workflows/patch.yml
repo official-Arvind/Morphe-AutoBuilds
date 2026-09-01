@@ -18,7 +18,7 @@ jobs:
   download-tools:
     name: Download Morphe Tools
     runs-on: ubuntu-latest
-    if: ${{ false }}
+    
     outputs:
       cache-key: ${{ steps.cache-key.outputs.cache-key }}
     steps:

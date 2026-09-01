@@ -601,7 +601,7 @@ def check_apk_integrity(apk_path: Path) -> bool:
 
 
 def find_cli() -> Path | None:
-    return find_file(list(Path('.').glob('*.jar')), contains='cli')
+    return find_file(list(Path('tools').glob('*.jar')), contains='cli')
 
 def find_patches() -> Path | None:
-    return find_file(list(Path('.').glob('*.jar')), contains='patches')
+    return find_file(list(Path('tools').glob('*.jar')), contains='patches')
