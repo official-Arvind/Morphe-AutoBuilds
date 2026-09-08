@@ -46,15 +46,6 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "new_code=$NEW_CODE" >> $GITHUB_OUTPUT
 
-      - name: Create WebUI Action Script
-        run: |
-          cat << 'ACTION' > morphe_manager/action.sh
-          #!/system/bin/sh
-          # Launch WebUI via Intent
-          am start -a android.intent.action.VIEW -d "http://127.0.0.1:8080"
-          ACTION
-          chmod +x morphe_manager/action.sh
-          
       - name: Bundle Osm0sis Busybox
         run: |
           mkdir -p morphe_manager/bin
@@ -62,11 +53,13 @@ jobs:
           unzip -j busybox.zip busybox-arm64 busybox-arm -d morphe_manager/bin/
           chmod +x morphe_manager/bin/*
           rm busybox.zip
+
       - name: Build Module Zip
         run: |
           mkdir -p dist
           cd morphe_manager
           zip -r9 ../dist/morphe-manager-v${{ steps.version.outputs.new_version }}.zip .
+          cp ../dist/morphe-manager-v${{ steps.version.outputs.new_version }}.zip ../dist/morphe-manager.zip
           cd ..
           
           # Create update.json for Magisk
