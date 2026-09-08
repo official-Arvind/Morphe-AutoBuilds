@@ -54,11 +54,14 @@ def main() -> int:
                     "config_version": "",
                     "source_sig": "",
                     "apk": "",
+                    "zip": "",
                     "built_version": "",
                 }
                 entries[key] = entry
             if apk:
                 entry["apk"] = apk
+            if rec.get("zip"):
+                entry["zip"] = rec.get("zip")
             if resolved_version:
                 entry["built_version"] = resolved_version
             # Promote pending_source_sig -> source_sig now that the build

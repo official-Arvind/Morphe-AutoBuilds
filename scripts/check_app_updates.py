@@ -50,6 +50,7 @@ RELEASE_TAG = "latest"
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 FORCE_FULL = os.environ.get("FORCE_FULL_REBUILD", "false").lower() in ("true", "1", "yes")
+APP_FILTER = os.environ.get("APP_FILTER", os.environ.get("APP_NAME", "")).strip().lower()
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -76,7 +77,7 @@ def run_gh(args: List[str], timeout: int = 120) -> Tuple[int, str, str]:
     try:
         p = subprocess.run(
             ["gh", *args],
-            capture_output=True, text=True, env=env, timeout=timeout,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env=env, timeout=timeout,
         )
         return p.returncode, p.stdout, p.stderr
     except FileNotFoundError:
@@ -709,7 +710,7 @@ def fetch_existing_apk_names() -> List[str]:
             )
             if rc == 0:
                 names = [ln.strip() for ln in out.splitlines() if ln.strip()]
-                return [n for n in names if n.endswith(".apk")]
+                return [n for n in names if (n.endswith(".apk") or n.endswith(".zip")) and not n.startswith("morphe-manager")]
 
     rc, out, _ = run_gh(["release", "view", RELEASE_TAG, "--json", "assets"])
     if rc != 0:
@@ -718,7 +719,8 @@ def fetch_existing_apk_names() -> List[str]:
         return [
             a.get("name", "")
             for a in json.loads(out).get("assets", [])
-            if a.get("name", "").endswith(".apk")
+            if (str(a.get("name", "")).endswith(".apk") or str(a.get("name", "")).endswith(".zip"))
+            and not str(a.get("name", "")).startswith("morphe-manager")
         ]
     except Exception:
         return []
@@ -737,6 +739,8 @@ def build_full_matrix() -> List[dict]:
         app = entry.get("app_name")
         src = entry.get("source")
         if not app or not src:
+            continue
+        if APP_FILTER and app.lower() != APP_FILTER:
             continue
         arches = arch_map.get((app, src), ["arm64-v8a", "armeabi-v7a", "universal"])
         for arch in arches:
@@ -903,10 +907,14 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
                         f"relying on source-signature for rebuild detection"
                     )
             old_apk = carried_apk
-            if old_apk and old_apk not in existing_apk_set:
-                reasons.append("apk-missing-from-release")
-            if not old_apk:
-                reasons.append("no-apk-recorded")
+            old_zip = eval_.get("zip", "")
+            if (old_apk and old_apk not in existing_apk_set) and (old_zip and old_zip not in existing_apk_set):
+                reasons.append("assets-missing-from-release")
+            elif not old_apk and not old_zip:
+                reasons.append("no-assets-recorded")
+
+        if APP_FILTER and app.lower() == APP_FILTER:
+            reasons.append(f"targeted-dispatch: {APP_FILTER}")
 
         if reasons:
             logging.info(f"  REBUILD {app}/{src}/{arch}: {'; '.join(reasons)}")
@@ -923,12 +931,19 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
             # Carry-over: nothing changed, safe to write the current signature.
             new_entries[mkey]["source_sig"] = cur_src_sig
             old_apk = carried_apk
+            old_zip = eval_.get("zip", "")
+            has_carry = False
             if old_apk and old_apk in existing_apk_set:
                 carry_over.append(old_apk)
-                logging.info(f"  carry  {app}/{src}/{arch}: {old_apk}")
+                has_carry = True
+            if old_zip and old_zip in existing_apk_set:
+                carry_over.append(old_zip)
+                has_carry = True
+            if has_carry:
+                logging.info(f"  carry  {app}/{src}/{arch}: apk={old_apk} zip={old_zip}")
             else:
                 # Defensive: if we can't carry it, we must rebuild.
-                logging.info(f"  REBUILD {app}/{src}/{arch}: no carry-over apk")
+                logging.info(f"  REBUILD {app}/{src}/{arch}: no carry-over assets")
                 build_matrix.append(entry)
                 new_entries[mkey]["source_sig"] = old_src_sig
                 new_entries[mkey]["pending_source_sig"] = cur_src_sig
@@ -958,7 +973,7 @@ def plan_incremental(full_matrix: List[dict], old_manifest: Optional[dict],
         # Determine the (app, source) of this APK by looking up the manifest entry.
         owner_pair = None
         for ekey, eval_ in new_entries.items():
-            if eval_.get("apk") == apk:
+            if eval_.get("apk") == apk or eval_.get("zip") == apk:
                 owner_pair = (eval_["app_name"], eval_["source"])
                 break
         if owner_pair is None or owner_pair not in rebuilding_pairs:

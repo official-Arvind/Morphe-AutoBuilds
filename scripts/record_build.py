@@ -88,6 +88,8 @@ def main() -> int:
         return 0
 
     apk_name = Path(apk_path).name if apk_path else ""
+    if not apk_name or apk_name.startswith("morphe-manager"):
+        return 0
 
     # Prefer explicit ARCH env, otherwise detect from filename, fallback universal
     arch = arch_env or detect_arch_from_filename(apk_name) or "universal"
@@ -100,17 +102,34 @@ def main() -> int:
     resolved_version = extract_version_from_filename(apk_name)
 
     REC_DIR.mkdir(parents=True, exist_ok=True)
+    safe = f"{app}__{src}__{arch}".replace("/", "_")
+    fp = REC_DIR / f"{safe}.json"
+
+    existing_record = {}
+    if fp.exists():
+        try:
+            with fp.open("r", encoding="utf-8") as f:
+                existing_record = json.load(f)
+        except Exception:
+            pass
+
+    is_zip = apk_name.lower().endswith(".zip")
+    existing_apk = existing_record.get("apk", "")
+    existing_zip = existing_record.get("zip", "")
+
+    new_apk = apk_name if not is_zip else (existing_apk or apk_name)
+    new_zip = apk_name if is_zip else existing_zip
+
     record = {
         "key": f"{app}|{src}|{arch}",
-        "apk": apk_name,
-        "resolved_version": resolved_version,
+        "apk": new_apk,
+        "zip": new_zip,
+        "resolved_version": resolved_version or existing_record.get("resolved_version", ""),
         "app_name": app,
         "source": src,
         "arch": arch,
     }
 
-    safe = f"{app}__{src}__{arch}".replace("/", "_")
-    fp = REC_DIR / f"{safe}.json"
     with fp.open("w", encoding="utf-8") as f:
         json.dump(record, f, indent=2)
     print(f"Recorded build: {fp} -> {record}")

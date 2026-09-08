@@ -6,6 +6,11 @@ env:
 on:
   workflow_dispatch:
     inputs:
+      app_name:
+        description: "App name to build (leave empty to check all apps)"
+        type: string
+        required: false
+        default: ""
       force_full_rebuild:
         description: "Rebuild every app (ignore incremental check)"
         type: boolean
@@ -54,6 +59,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FORCE_FULL_REBUILD: ${{ inputs.force_full_rebuild || 'false' }}
+          APP_FILTER: ${{ inputs.app_name || '' }}
         run: |
           python scripts/check_app_updates.py
 
@@ -240,8 +246,8 @@ jobs:
           echo "📁 APKs ready for release:"
           ls -la ./release-apks/
 
-          final_count=$(ls -1 ./release-apks/*.apk 2>/dev/null | wc -l || echo "0")
-          echo "📊 Total APKs: $final_count"
+          final_count=$(ls -1 ./release-apks/*.apk ./release-apks/*.zip 2>/dev/null | wc -l || echo "0")
+          echo "📊 Total artifacts ready: $final_count"
 
       - name: Build Final Manifest
         if: steps.check-apks.outputs.skip_release == 'false'

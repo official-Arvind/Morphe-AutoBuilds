@@ -61,7 +61,7 @@ def gh_release_assets(release: str) -> List[dict]:
     try:
         result = subprocess.run(
             ["gh", "release", "view", release, "--json", "assets"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
         )
         assets = json.loads(result.stdout or "{}").get("assets", []) or []
         return [a for a in assets if isinstance(a, dict)
@@ -98,7 +98,7 @@ def delete_asset_by_name(release: str, name: str) -> tuple:
     try:
         result = subprocess.run(
             ["gh", "release", "delete-asset", release, name, "--yes"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
         )
         return True, ""
     except subprocess.CalledProcessError as e:
@@ -118,7 +118,7 @@ def delete_asset_by_id(name: str, asset_id: str) -> tuple:
         result = subprocess.run(
             ["gh", "api", "-X", "DELETE",
              f"repos/{repo}/releases/assets/{asset_id}"],
-            capture_output=True, text=True, check=True,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", check=True,
         )
         return True, ""
     except subprocess.CalledProcessError as e:
@@ -174,10 +174,11 @@ def main() -> int:
     keep_prefixes = {identity_prefix(n) for n in keep}
 
     to_delete = []  # list of asset dicts
+    PROTECTED_EXACT = {"manifest.json", "update.json", "morphe-manager.zip"}
     for asset in assets:
         name = str(asset.get("name", ""))
-        if not name or name in keep:
-            continue  # explicitly kept (or unnamed)
+        if not name or name in keep or name in PROTECTED_EXACT or name.startswith("morphe-manager"):
+            continue  # explicitly kept (or unnamed, or core manager/manifest asset)
         if identity_prefix(name) in keep_prefixes:
             to_delete.append(asset)  # same app/arch, but a different (older) version
         # else: an app/arch we didn't rebuild this run -> leave it untouched

@@ -12,6 +12,7 @@ import zipfile
 import tempfile
 import argparse
 import urllib.request
+import shutil
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -90,6 +91,14 @@ def package_manager(manager_dir: Path, output_zip: Path, update_json_path: Path 
                     zf.write(file_path, arcname)
 
     print(f"✅ Created {output_zip} ({output_zip.stat().st_size} bytes)")
+
+    # Also emit versioned zip asset (e.g. morphe-manager-v2.2.zip)
+    versioned_zip = output_zip.parent / f"morphe-manager-v{version}.zip"
+    try:
+        shutil.copyfile(output_zip, versioned_zip)
+        print(f"✅ Created versioned {versioned_zip} ({versioned_zip.stat().st_size} bytes)")
+    except Exception as e:
+        print(f"⚠️ Could not create versioned zip {versioned_zip}: {e}")
 
     if update_json_path:
         update_json_path.parent.mkdir(parents=True, exist_ok=True)

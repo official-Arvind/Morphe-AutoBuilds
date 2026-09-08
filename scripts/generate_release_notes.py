@@ -17,22 +17,44 @@ def generate_notes():
 
     # Grouping logic
     # Filenames are typically: {app_name}-{arch}-patch-v{version}.apk or -root-{name}-v{version}.zip
+    sources_dir = Path("sources")
+    known_sources = set()
+    if sources_dir.exists():
+        known_sources = {p.stem.lower() for p in sources_dir.glob("*.json")}
+
     apps = defaultdict(list)
     for asset in assets:
-        if asset in ["manifest.json", "morphe-manager.zip", "update.json"]:
+        # Strip potential BOM or whitespace
+        asset = asset.strip("\ufeff").strip()
+        if not asset:
+            continue
+        if asset in ["manifest.json", "update.json"] or asset.startswith("morphe-manager"):
             apps["System / Core"].append(asset)
             continue
         
-        # Simple heuristic to extract app name (first word before dash)
-        match = re.match(r"^(.*?)-(.*?)-(root|nonroot)-universal-v(.*?)\.(zip|apk)$", asset)
-        if match:
-            app_name = match.group(1).title().replace("-", " ") + f" (Patch: {match.group(2).capitalize()})"
-        else:
-            match_old = re.match(r"^([a-zA-Z0-9_]+(-[a-zA-Z0-9_]+)*?)-(universal|arm64-v8a|armeabi-v7a|x86|x86_64)", asset)
-            if match_old:
-                app_name = match_old.group(1).title().replace("-", " ")
+        if "-root-" in asset or "-nonroot-" in asset:
+            tag = "-root-" if "-root-" in asset else "-nonroot-"
+            head = asset.split(tag, 1)[0]
+            matched_src = None
+            for s in sorted(known_sources, key=len, reverse=True):
+                if head.lower().endswith(f"-{s}"):
+                    matched_src = s
+                    app_slug = head[:-len(s)-1]
+                    break
+            if matched_src:
+                app_name = app_slug.title().replace("-", " ") + f" (Patch: {matched_src.capitalize()})"
             else:
-                app_name = asset.split("-")[0].title()
+                app_name = head.title().replace("-", " ")
+        else:
+            match_legacy = re.match(r"^(.*?)-(universal|arm64-v8a|armeabi-v7a|x86|x86_64)-(.*?)-v(.*?)\.(zip|apk)$", asset, re.IGNORECASE)
+            if match_legacy:
+                app_name = match_legacy.group(1).title().replace("-", " ") + f" (Patch: {match_legacy.group(3).capitalize()})"
+            else:
+                match_generic = re.match(r"^([a-zA-Z0-9_]+(-[a-zA-Z0-9_]+)*?)-(universal|arm64-v8a|armeabi-v7a)", asset, re.IGNORECASE)
+                if match_generic:
+                    app_name = match_generic.group(1).title().replace("-", " ")
+                else:
+                    app_name = asset.split("-")[0].title()
 
         apps[app_name].append(asset)
 
