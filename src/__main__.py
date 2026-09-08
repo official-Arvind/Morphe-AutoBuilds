@@ -266,21 +266,12 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
             else:
                 signed_apk = Path(f"{app_name}-{source}-nonroot-{arch}-v{version}.apk")
 
-            apksigner = utils.find_apksigner()
-            if not apksigner:
-                logging.error("apksigner not found")
-                return None
-
-            try:
-                utils.run_process([
-                    "java", "-jar", str(apksigner), "sign",
-                    "--in", str(output_apk), "--out", str(signed_apk)
-                ], silent=True, check=True)
+            if utils.sign_apk(output_apk, signed_apk):
                 output_apk.unlink(missing_ok=True)
                 success = True
                 break
-            except Exception as e:
-                logging.error(f"Failed to sign APK: {e}")
+            else:
+                logging.error(f"Failed to sign APK for {app_name}")
                 output_apk.unlink(missing_ok=True)
                 continue
 

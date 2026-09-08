@@ -132,6 +132,60 @@ def find_apksigner() -> str | None:
     )
     return None
 
+def ensure_debug_keystore() -> Path:
+    """Ensure a valid debug keystore exists for signing APKs."""
+    keystore_path = Path("debug.keystore")
+    if keystore_path.exists() and keystore_path.stat().st_size > 0:
+        return keystore_path
+
+    user_ks = Path.home() / ".android" / "debug.keystore"
+    if user_ks.exists() and user_ks.stat().st_size > 0:
+        return user_ks
+
+    cmd = [
+        "keytool", "-genkey", "-v",
+        "-keystore", str(keystore_path),
+        "-storepass", "android",
+        "-alias", "androiddebugkey",
+        "-keypass", "android",
+        "-keyalg", "RSA",
+        "-keysize", "2048",
+        "-validity", "10000",
+        "-dname", "CN=Android Debug,O=Android,C=US"
+    ]
+    try:
+        run_process(cmd, silent=True, check=True)
+        return keystore_path
+    except Exception as e:
+        logging.warning(f"keytool debug keystore generation failed: {e}")
+        return keystore_path
+
+def sign_apk(input_apk: Path, output_apk: Path) -> bool:
+    """Sign an APK using apksigner with a debug keystore."""
+    apksigner = find_apksigner()
+    if not apksigner:
+        logging.error("apksigner not found")
+        return False
+
+    keystore = ensure_debug_keystore()
+
+    cmd = [
+        "java", "-jar", str(apksigner), "sign",
+        "--ks", str(keystore),
+        "--ks-pass", "pass:android",
+        "--ks-key-alias", "androiddebugkey",
+        "--key-pass", "pass:android",
+        "--in", str(input_apk),
+        "--out", str(output_apk)
+    ]
+
+    try:
+        run_process(cmd, silent=True, check=True)
+        return output_apk.exists() and output_apk.stat().st_size > 0
+    except Exception as e:
+        logging.error(f"apksigner sign failed: {e}")
+        return False
+
 def run_process(
     command: List[str],
     cwd: Optional[Path] = None,

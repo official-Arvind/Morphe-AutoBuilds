@@ -9,6 +9,7 @@ dist/
 *.jar
 *.mpp
 *.rvp
+*.keystore
 morphe-data/
 
 # Temporary files and scripts
