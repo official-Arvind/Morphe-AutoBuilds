@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shutil
+import zipfile
 import time
 import logging
 from typing import List, Optional
@@ -622,10 +623,11 @@ def check_apk_integrity(apk_path: Path) -> bool:
         with zipfile.ZipFile(apk_path, 'r') as z:
             # For huge APKs testzip can be super slow or fail, we just check if it opens and has manifest
             if 'AndroidManifest.xml' not in z.namelist():
-                logging.warning('AndroidManifest.xml missing from APK')
+                logging.warning(f'AndroidManifest.xml missing from {apk_path.name}')
                 return False
         return True
-    except Exception:
+    except Exception as e:
+        logging.warning(f"check_apk_integrity failed for {apk_path.name}: {e}")
         return False
 
 
