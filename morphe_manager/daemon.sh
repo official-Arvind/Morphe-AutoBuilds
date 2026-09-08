@@ -146,6 +146,18 @@ while true; do
                 echo "[✓] Module $COUNTER installation finished." >> "$PROG_FILE"
                 SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
                 rm -f "$FILEPATH"
+
+                # If module contains custom_apk, ensure package is registered in Android
+                for mod_apk in /data/adb/modules/*/custom_apk/app.apk; do
+                    if [ -f "$mod_apk" ]; then
+                        MOD_DIR=$(dirname $(dirname "$mod_apk"))
+                        MOD_PKG=$(grep -o 'PKG_NAME="[^"]*"' "$MOD_DIR/service.sh" 2>/dev/null | head -n 1 | cut -d'"' -f2)
+                        if [ -n "$MOD_PKG" ] && ! pm path "$MOD_PKG" >/dev/null 2>&1; then
+                            echo "[-] Target app not pre-installed. Registering $MOD_PKG into system..." >> "$PROG_FILE"
+                            pm install -r -d "$mod_apk" >> "$PROG_FILE" 2>&1 || true
+                        fi
+                    fi
+                done
             else
                 echo "[x] ERROR: Download failed or ZIP corrupt." >> "$PROG_FILE"
                 rm -f "$FILEPATH"

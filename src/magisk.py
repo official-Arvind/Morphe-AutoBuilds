@@ -77,8 +77,15 @@ if [ -z "$APK_PATH" ]; then
 fi
 
 if [ -z "$APK_PATH" ]; then
-    ui_print "⚠️ WARNING: Original app is NOT installed!"
-    ui_print "⚠️ Please install {package_name} before rebooting!"
+    ui_print "- Target app is not currently installed."
+    ui_print "- Automatically installing {app_name} package..."
+    pm install -r -d "$MODPATH/custom_apk/app.apk" 2>/dev/null || true
+    APK_PATH=$(pm path "$PKG_NAME" 2>/dev/null | head -n 1 | cut -d':' -f2)
+    if [ -n "$APK_PATH" ]; then
+        ui_print "✓ Successfully installed {app_name}!"
+    else
+        ui_print "⚠️ Android PM deferred install. Package will be installed on boot."
+    fi
 else
     ui_print "✓ Detected existing target: $APK_PATH"
 fi
@@ -109,6 +116,15 @@ mount_patched_apk() {{
         fi
     fi
 
+    # 3. If target APK not found because app was not pre-installed, install it directly
+    if [ -z "$TARGET_APK" ] || [ ! -f "$TARGET_APK" ]; then
+        if [ -f "$MODDIR/custom_apk/app.apk" ]; then
+            pm install -r -d "$MODDIR/custom_apk/app.apk" >/dev/null 2>&1 || true
+            BASE=$(pm path "$PKG_NAME" 2>/dev/null | head -n 1 | cut -d':' -f2)
+            [ -n "$BASE" ] && [ -f "$BASE" ] && TARGET_APK="$BASE"
+        fi
+    fi
+
     if [ -n "$TARGET_APK" ] && [ -f "$TARGET_APK" ]; then
         chmod 644 $MODDIR/custom_apk/app.apk
         chown system:system $MODDIR/custom_apk/app.apk
@@ -124,6 +140,7 @@ mount_patched_apk() {{
     fi
     return 1
 }}
+
 """
 
             post_fs_sh = temp_path / "post-fs-data.sh"

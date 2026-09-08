@@ -156,6 +156,17 @@ while true; do
                                     rm -f "$ZIP"
                                 done < "$TMP_DIR/zip_list.txt"
                                 
+                                # Ensure any newly installed module with custom_apk is registered
+                                for mod_apk in /data/adb/modules/*/custom_apk/app.apk; do
+                                    if [ -f "$mod_apk" ]; then
+                                        MOD_DIR=$(dirname $(dirname "$mod_apk"))
+                                        MOD_PKG=$(grep -o 'PKG_NAME="[^"]*"' "$MOD_DIR/service.sh" 2>/dev/null | head -n 1 | cut -d'"' -f2)
+                                        if [ -n "$MOD_PKG" ] && ! pm path "$MOD_PKG" >/dev/null 2>&1; then
+                                            pm install -r -d "$mod_apk" >/dev/null 2>&1 || true
+                                        fi
+                                    fi
+                                done
+
                                 # Reboot system
                                 svc power reboot &
                             fi
