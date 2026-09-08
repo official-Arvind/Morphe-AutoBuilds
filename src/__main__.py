@@ -88,7 +88,8 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
         for attempt_idx, ver in enumerate(versions_to_try):
             if attempt_idx > 0:
                 logging.warning(f"Retrying with older version {ver} due to patch failure...")
-                input_apk.unlink(missing_ok=True)
+                if input_apk is not None:
+                    input_apk.unlink(missing_ok=True)
                 input_apk, version, _ = method(app_name, str(cli), str(patches), arch, override_version=ver)
                 if input_apk is None:
                     continue
@@ -181,6 +182,7 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                             logging.warning("Repair failed to produce a valid APK (missing manifest or corrupt).")
                             fixed_apk.unlink(missing_ok=True)
                             input_apk.unlink(missing_ok=True)
+                            input_apk = None
                             continue # Try next version
                         input_apk.unlink(missing_ok=True)
                         fixed_apk.rename(input_apk)
@@ -188,10 +190,12 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                     else:
                         logging.error("Repair produced no usable file. Abandoning APK.")
                         input_apk.unlink(missing_ok=True)
+                        input_apk = None
                         continue
                 else:
                     logging.error("zip command not available for repair. Abandoning corrupt APK.")
                     input_apk.unlink(missing_ok=True)
+                    input_apk = None
                     continue
             else:
                 logging.info("APK integrity OK; no repair needed")
@@ -238,7 +242,8 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                         raise RuntimeError("Patching failed: 0 patches applied.")
 
             except (subprocess.CalledProcessError, RuntimeError) as e:
-                input_apk.unlink(missing_ok=True)
+                if input_apk is not None:
+                    input_apk.unlink(missing_ok=True)
                 output_apk.unlink(missing_ok=True)
 
                 def _should_retry_with_older_version(output: str | None) -> bool:
@@ -253,7 +258,8 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                 continue # Try next version or next method
 
             # Patch succeeded -> cleanup input and sign.
-            input_apk.unlink(missing_ok=True)
+            if input_apk is not None:
+                input_apk.unlink(missing_ok=True)
 
             if is_root:
                 signed_apk = Path(f"{app_name}-{source}-root-{arch}-v{version}.apk")

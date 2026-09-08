@@ -559,36 +559,46 @@ def detect_source_type(cli_file: Path, patches_file: Path) -> str:
 
 
 def strip_zip_entries(zip_path: Path, patterns: list[str]) -> None:
-    """Strip matching file patterns from a ZIP archive in a cross-platform way."""
+    """Strip matching file patterns from a ZIP archive in a safe, verified way."""
     if not zip_path or not zip_path.exists():
         return
 
-    if shutil.which("zip"):
-        try:
-            run_process(["zip", "--delete", str(zip_path)] + patterns, silent=True, check=False)
-            return
-        except Exception:
-            pass
+    import fnmatch
+    import zipfile
 
-    # Pure Python fallback using zipfile
-    temp_zip = zip_path.with_suffix(".tmp.zip")
+    # First check if any matching entries actually exist
     try:
-        import fnmatch
-        modified = False
+        with zipfile.ZipFile(zip_path, 'r') as zin:
+            infolist = zin.infolist()
+            matching = [item for item in infolist if any(fnmatch.fnmatch(item.filename, p) for p in patterns)]
+            if not matching:
+                logging.debug(f"No matching entries for {patterns} in {zip_path.name}; skipping strip.")
+                return
+    except Exception as e:
+        logging.debug(f"Cannot inspect {zip_path.name} before strip: {e}")
+        return
+
+    # Use pure Python zip streaming to remove matching entries cleanly
+    temp_zip = zip_path.with_suffix(".tmp_strip.apk")
+    try:
         with zipfile.ZipFile(zip_path, 'r') as zin:
             with zipfile.ZipFile(temp_zip, 'w', compression=zin.compression) as zout:
                 for item in zin.infolist():
                     if any(fnmatch.fnmatch(item.filename, p) for p in patterns):
-                        modified = True
                         continue
                     zout.writestr(item, zin.read(item.filename))
-        if modified:
-            zip_path.unlink()
-            temp_zip.rename(zip_path)
-        else:
-            temp_zip.unlink(missing_ok=True)
+
+        # Validate that the stripped APK is intact before replacing
+        if zipfile.is_zipfile(temp_zip):
+            with zipfile.ZipFile(temp_zip, 'r') as zcheck:
+                if 'AndroidManifest.xml' in zcheck.namelist():
+                    zip_path.unlink(missing_ok=True)
+                    temp_zip.rename(zip_path)
+                    logging.info(f"Successfully stripped {len(matching)} entry/entries from {zip_path.name}")
+                    return
+        temp_zip.unlink(missing_ok=True)
     except Exception as e:
-        logging.debug(f"Failed to strip zip entries: {e}")
+        logging.warning(f"Failed to strip zip entries: {e}")
         if temp_zip.exists():
             temp_zip.unlink(missing_ok=True)
 
