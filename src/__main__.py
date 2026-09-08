@@ -2,12 +2,13 @@ import json
 import logging
 import re
 import os
+import sys
 import shutil
-from sys import exit
+import zipfile
+import subprocess
 from pathlib import Path
 from src import magisk
 from os import getenv
-import subprocess
 from src import (
     r2,
     utils,
@@ -98,7 +99,6 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
             if input_apk.suffix != ".apk":
                 is_bundle = False
                 try:
-                    import zipfile
                     if zipfile.is_zipfile(input_apk):
                         with zipfile.ZipFile(input_apk, "r") as z:
                             namelist = z.namelist()
@@ -128,14 +128,12 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                         logging.warning(f"APKEditor merge failed ({e}); checking if file can be used as standalone APK")
                         if input_apk.exists():
                             target_apk.unlink(missing_ok=True)
-                            import os
                             os.replace(input_apk, target_apk)
                             input_apk = target_apk
                 else:
                     logging.info(f"Normalizing standalone APK filename to {target_apk.name}")
                     if input_apk != target_apk:
                         target_apk.unlink(missing_ok=True)
-                        import os
                         os.replace(input_apk, target_apk)
                         input_apk = target_apk
 
@@ -143,13 +141,11 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                     logging.error("Processed APK file not found")
                     continue
 
-                import re
                 clean_name = re.sub(r'\(\d+\)', '', input_apk.name)  
                 clean_name = re.sub(r'-\d{6,}_', '_', clean_name)  
                 if clean_name != input_apk.name:
                     clean_apk = input_apk.with_name(clean_name)
                     clean_apk.unlink(missing_ok=True)
-                    import os
                     os.replace(input_apk, clean_apk)
                     input_apk = clean_apk
 
@@ -169,10 +165,8 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
             logging.info("Checking APK integrity...")
             if not utils.check_apk_integrity(input_apk):
                 logging.warning("APK integrity check failed; attempting repair with zip -FF if available")
-                import shutil
                 if shutil.which("zip"):
                     fixed_apk = Path(f"{app_name}-fixed-v{version}.apk")
-                    import subprocess
                     subprocess.run([
                         "zip", "-FF", str(input_apk), "--out", str(fixed_apk)
                     ], check=False, capture_output=True)
@@ -245,11 +239,6 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
                 if input_apk is not None:
                     input_apk.unlink(missing_ok=True)
                 output_apk.unlink(missing_ok=True)
-
-                def _should_retry_with_older_version(output: str | None) -> bool:
-                    if not output: return False
-                    t = output.lower()
-                    return ("failed to match the fingerprint" in t or "patch.patchexception" in t or ("fingerprint" in t and "failed" in t) or "patching aborted" in t)
 
                 if attempt_idx < len(versions_to_try) - 1 and _should_retry_with_older_version(getattr(e, "output", None)):
                     continue
@@ -379,6 +368,5 @@ def main():
 
 
 if __name__ == "__main__":
-    import sys
     main()
 
