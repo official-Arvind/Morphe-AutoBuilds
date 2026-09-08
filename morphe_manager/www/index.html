@@ -142,8 +142,9 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            padding-bottom: 80px;
+            padding-bottom: 140px;
         }
+
 
 
         .app-group {
@@ -251,21 +252,98 @@
         }
 
         .badge {
-            background-color: rgba(255,255,255,0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.08);
+            padding: 3px 8px;
+            border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-recommended {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .badge-double-flash {
+            background: rgba(245, 158, 11, 0.18);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .badge-arch {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary-color);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        .badge-version {
+            background: rgba(129, 140, 248, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(129, 140, 248, 0.25);
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--primary-color);
+            color: #0f172a !important;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: var(--transition);
+            margin-left: auto;
+        }
+
+        .download-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+        .filter-chip {
+            padding: 6px 14px;
+            background-color: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--on-surface-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: var(--transition);
+            user-select: none;
+        }
+        .filter-chip.active {
+            background-color: var(--primary-color);
+            color: #0f172a;
+            border-color: var(--primary-color);
         }
 
         .module-filename {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--on-surface-muted);
-            opacity: 0.7;
+            opacity: 0.6;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            margin-top: 4px;
+            margin-top: 6px;
+            font-family: monospace;
         }
 
         .btn {
@@ -438,8 +516,11 @@
     <div class="app-container">
         <header>
             <h1>Morphe Manager</h1>
-            <div class="subtitle">Root Module Installer</div>
-            <div class="version-badge" id="appVersionBadge">v2.2</div>
+            <div class="subtitle">Magisk, KernelSU &amp; APatch Manager</div>
+            <div style="display:flex; justify-content:center; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <span class="version-badge" id="appVersionBadge">v2.2</span>
+                <span class="version-badge" id="deviceInfoBadge" style="display:none; background: rgba(56, 189, 248, 0.15); color: var(--primary-color); border: 1px solid rgba(56, 189, 248, 0.3);"></span>
+            </div>
         </header>
 
         <div class="tabs">
@@ -451,7 +532,14 @@
         <div id="tab-modules" class="tab-content active">
             <div class="search-container">
                 <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" id="searchInput" class="search-input" placeholder="Search modules..." oninput="filterModules()">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search apps, patches, versions..." oninput="applyFiltersAndRender()">
+            </div>
+
+            <div class="filter-container">
+                <div class="filter-chip active" data-filter="all" onclick="setFilter('all', this)">All Releases</div>
+                <div class="filter-chip" data-filter="root" onclick="setFilter('root', this)">⚡ Root Modules (.zip)</div>
+                <div class="filter-chip" data-filter="nonroot" onclick="setFilter('nonroot', this)">📦 Non-Root APKs (.apk)</div>
+                <div class="filter-chip" data-filter="device" id="chipDeviceFilter" onclick="setFilter('device', this)">📱 For This Device</div>
             </div>
 
             <div id="loading">
@@ -461,7 +549,7 @@
             
             <div id="emptyState" class="empty-state">
                 <svg style="width: 48px; height: 48px; opacity: 0.5; margin-bottom: 12px; display: inline-block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <div id="emptyStateMsg">No modules match your search.</div>
+                <div id="emptyStateMsg">No modules match your search or filter.</div>
             </div>
 
             <div class="app-list" id="appList" style="display: none;"></div>
@@ -527,6 +615,18 @@
             }
         }
 
+        let currentFilter = 'all';
+        let deviceAbi = '';
+        let deviceModel = '';
+
+        function setFilter(filterType, element) {
+            tryVibrate(20);
+            currentFilter = filterType;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            if (element) element.classList.add('active');
+            applyFiltersAndRender();
+        }
+
         async function fetchLatestRelease() {
             try {
                 const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`);
@@ -536,7 +636,7 @@
                 availableModules = release.assets.filter(asset => (asset.name.endsWith('.zip') || asset.name.endsWith('.apk')) && !asset.name.includes('morphe-manager'));
                 
                 if (availableModules.length > 0) {
-                    renderAppList(availableModules);
+                    applyFiltersAndRender();
                     document.getElementById('floatingAction').style.display = 'block';
                 } else {
                     showStatus('modules', 'No Magisk modules found in the latest release.', 'error');
@@ -557,23 +657,146 @@
             return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
         }
 
-        function extractVersion(filename) {
-            const match = filename.match(/-v([\d\.]+[\w\.\-\(\) ]*?)\.zip$/);
-            return match ? "v" + match[1] : "Unknown Version";
-        }
-        
-        function extractArch(filename) {
-            if (filename.includes('arm64-v8a')) return 'arm64';
-            if (filename.includes('armeabi-v7a')) return 'arm32';
-            return 'universal';
+        function parseModuleAsset(filename) {
+            const isZip = filename.endsWith('.zip');
+            const isApk = filename.endsWith('.apk');
+            const ext = isZip ? 'zip' : (isApk ? 'apk' : '');
+            
+            // 1. Version extraction using lastIndexOf('-v')
+            let version = "Unknown Version";
+            let base = filename;
+            if (ext) base = base.slice(0, -(ext.length + 1));
+
+            const lastVIdx = base.lastIndexOf('-v');
+            if (lastVIdx !== -1) {
+                version = base.substring(lastVIdx + 1);
+                base = base.substring(0, lastVIdx);
+            }
+
+            // 2. Arch extraction
+            let arch = "universal";
+            let archLabel = "Universal";
+            if (base.includes('-arm64-v8a')) {
+                arch = 'arm64-v8a';
+                archLabel = 'arm64-v8a';
+                base = base.replace('-arm64-v8a', '');
+            } else if (base.includes('-arm64')) {
+                arch = 'arm64-v8a';
+                archLabel = 'arm64-v8a';
+                base = base.replace('-arm64', '');
+            } else if (base.includes('-armeabi-v7a')) {
+                arch = 'armeabi-v7a';
+                archLabel = 'armeabi-v7a';
+                base = base.replace('-armeabi-v7a', '');
+            } else if (base.includes('-armeabi')) {
+                arch = 'armeabi-v7a';
+                archLabel = 'armeabi-v7a';
+                base = base.replace('-armeabi', '');
+            } else if (base.includes('-x86_64')) {
+                arch = 'x86_64';
+                archLabel = 'x86_64';
+                base = base.replace('-x86_64', '');
+            } else if (base.includes('-x86')) {
+                arch = 'x86';
+                archLabel = 'x86';
+                base = base.replace('-x86', '');
+            } else if (base.includes('-universal')) {
+                arch = 'universal';
+                archLabel = 'Universal';
+                base = base.replace('-universal', '');
+            } else if (base.includes('-all')) {
+                arch = 'universal';
+                archLabel = 'Universal';
+                base = base.replace('-all', '');
+            }
+
+            // 3. Variant (root vs nonroot)
+            let isRoot = isZip;
+            if (base.includes('-root')) {
+                isRoot = true;
+                base = base.replace('-root', '');
+            } else if (base.includes('-nonroot')) {
+                isRoot = false;
+                base = base.replace('-nonroot', '');
+            }
+
+            // Clean any trailing markers
+            base = base.replace(/-patch$/i, '').replace(/-module$/i, '');
+
+            // 4. App Name and Patch Source: base is now {app_name}-{source}
+            let appSlug = base;
+            let patchSource = "Default";
+            const lastHyphen = base.lastIndexOf('-');
+            if (lastHyphen > 0) {
+                appSlug = base.slice(0, lastHyphen);
+                patchSource = base.slice(lastHyphen + 1);
+            }
+            // Capitalize patch source
+            patchSource = patchSource.charAt(0).toUpperCase() + patchSource.slice(1);
+
+            // Clean App Title
+            const appTitle = appSlug.split('-').map(word => {
+                const lower = word.toLowerCase();
+                if (lower === 'vpn') return 'VPN';
+                if (lower === 'ai') return 'AI';
+                if (lower === 'id') return 'ID';
+                if (lower === 'yt') return 'YouTube';
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(' ');
+
+            const isDoubleFlash = isRoot && (appSlug.toLowerCase().includes('youtube') || filename.toLowerCase().includes('youtube'));
+            const typeStr = isRoot ? `Root Module (${archLabel})` : `Non-Root APK (${archLabel})`;
+
+            return {
+                appSlug,
+                appTitle,
+                patchSource,
+                isRoot,
+                isZip,
+                arch,
+                archLabel,
+                version,
+                typeStr,
+                isDoubleFlash
+            };
         }
 
-        function filterModules() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
+        function isAssetCompatible(parsed) {
+            if (parsed.arch === 'universal' || parsed.arch === 'all') return true;
+            if (!deviceAbi || deviceAbi === 'unknown') return true;
+            if (deviceAbi === 'arm64-v8a') {
+                return parsed.arch === 'arm64-v8a' || parsed.arch === 'universal';
+            }
+            if (deviceAbi === 'armeabi-v7a') {
+                return parsed.arch === 'armeabi-v7a' || parsed.arch === 'universal';
+            }
+            return parsed.arch === deviceAbi || parsed.arch === 'universal';
+        }
+
+        function applyFiltersAndRender() {
+            const query = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+            
             const filtered = availableModules.filter(mod => {
-                const cleanName = (mod.name.split('-')[0] || mod.name).toLowerCase();
-                return cleanName.includes(query) || mod.name.toLowerCase().includes(query);
+                const parsed = parseModuleAsset(mod.name);
+                
+                // Filter by search query
+                if (query) {
+                    const matchQuery = parsed.appTitle.toLowerCase().includes(query) ||
+                                       parsed.patchSource.toLowerCase().includes(query) ||
+                                       parsed.version.toLowerCase().includes(query) ||
+                                       parsed.archLabel.toLowerCase().includes(query) ||
+                                       mod.name.toLowerCase().includes(query);
+                    if (!matchQuery) return false;
+                }
+                
+                // Filter by chip category
+                if (currentFilter === 'root' && !parsed.isRoot) return false;
+                if (currentFilter === 'nonroot' && parsed.isRoot) return false;
+                if (currentFilter === 'device' && !isAssetCompatible(parsed)) return false;
+                
+                return true;
             });
+            
             renderAppList(filtered);
             
             if (filtered.length === 0 && availableModules.length > 0) {
@@ -581,7 +804,7 @@
                 document.getElementById('appList').style.display = 'none';
             } else {
                 document.getElementById('emptyState').style.display = 'none';
-                document.getElementById('appList').style.display = 'flex';
+                document.getElementById('appList').style.display = 'block';
             }
         }
 
@@ -593,32 +816,16 @@
             const grouped = {};
             
             modulesToRender.forEach(mod => {
-                let appName = "Unknown App";
-                let patchSource = "Other";
-                let typeStr = "Unknown";
-                let version = "v?";
-                
-                const match = mod.name.match(/^(.*?)-(.*?)-(root|nonroot)-universal-v(.*?)\.(zip|apk)$/);
-                if (match) {
-                    appName = match[1].split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                    patchSource = match[2];
-                    typeStr = match[3] === 'root' ? 'Root Module (ZIP)' : 'Universal (APK)';
-                    version = "v" + match[4];
-                } else {
-                    // Fallback for older formats
-                    let baseName = mod.name.split('-universal')[0].split('-arm64')[0].split('-armeabi')[0];
-                    appName = baseName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                    version = extractVersion(mod.name);
-                    typeStr = mod.name.endsWith('.zip') ? 'Root Module (ZIP)' : 'Universal (APK)';
-                }
+                const parsed = parseModuleAsset(mod.name);
+                const appName = parsed.appTitle;
+                const patchSource = parsed.patchSource;
                 
                 if (!grouped[appName]) grouped[appName] = {};
                 if (!grouped[appName][patchSource]) grouped[appName][patchSource] = [];
                 
                 grouped[appName][patchSource].push({
                     ...mod,
-                    typeStr,
-                    version
+                    parsed
                 });
             });
             
@@ -633,33 +840,54 @@
                     sourceDiv.innerHTML = `<div class="patch-group-title">Patch: ${source}</div>`;
                     
                     mods.forEach(mod => {
+                        const parsed = mod.parsed;
                         const size = formatBytes(mod.size);
+                        const isZip = parsed.isZip;
                         const isChecked = selectedUrls.has(mod.browser_download_url) ? 'checked' : '';
                         const selectedClass = isChecked ? 'selected' : '';
+                        const isCompatible = isAssetCompatible(parsed);
                         
-                        // Disable checkbox if it's an APK (can't be flashed by this tool usually)
-                        // Actually the user says "when clicked will show those two files".
-                        // Let's allow downloading both. But for daemon flash, we shouldn't pass APKs.
-                        // For the web UI action "Select Modules to Flash", we should only allow checking ZIPs for flashing.
-                        // Non-root APKs can just be downloaded manually.
-                        
-                        const isZip = mod.name.endsWith('.zip');
                         const inputHtml = isZip ? 
-                            `<input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="tryVibrate(15); updateBtn(this)" ${isChecked}>` :
-                            `<a href="${mod.browser_download_url}" class="badge" style="background:var(--primary-color);color:#000;text-decoration:none;padding:8px;border-radius:8px;font-weight:bold;">Download</a>`;
+                            `<input type="checkbox" class="module-checkbox" value="${mod.browser_download_url}" onchange="tryVibrate(15); updateBtn(this)" ${isChecked}>` : '';
                             
-                        const card = document.createElement('label');
+                        const card = document.createElement('div');
                         card.className = `module-card ${selectedClass}`;
-                        if (!isZip) card.style.cursor = 'default';
+                        if (isZip) {
+                            card.onclick = (e) => {
+                                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'A') {
+                                    const cb = card.querySelector('.module-checkbox');
+                                    if (cb) {
+                                        cb.checked = !cb.checked;
+                                        tryVibrate(15);
+                                        updateBtn(cb);
+                                    }
+                                }
+                            };
+                        } else {
+                            card.style.cursor = 'default';
+                        }
                         
                         card.innerHTML = `
-                            ${isZip ? inputHtml : ''}
+                            ${inputHtml}
                             <div class="module-info">
-                                <div class="module-name" style="font-size:14px;">${mod.typeStr}</div>
-                                <div class="module-details">
-                                    <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--secondary-color);">${mod.version}</span>
+                                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;">
+                                    <div class="module-name" style="font-size:15px; font-weight:700;">${parsed.typeStr}</div>
+                                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                                        ${parsed.isDoubleFlash ? '<span class="badge badge-double-flash" title="Morphe Manager automatically flashes this 2x">⚡ Auto 2x Flash</span>' : ''}
+                                        ${isCompatible ? '<span class="badge badge-recommended">📱 Compatible</span>' : '<span class="badge" style="opacity:0.6;">32-bit</span>'}
+                                    </div>
+                                </div>
+                                <div class="module-details" style="flex-wrap:wrap; margin-top:6px;">
+                                    <span class="badge badge-version">${parsed.version}</span>
+                                    <span class="badge badge-arch">${parsed.archLabel}</span>
                                     <span class="badge">${size}</span>
-                                    ${!isZip ? inputHtml : ''}
+                                    ${!isZip ? `
+                                        <a href="${mod.browser_download_url}" class="download-btn" onclick="tryVibrate(20); event.stopPropagation();">
+                                            <svg style="width:14px; height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            Download APK
+                                        </a>` : `
+                                        <a href="${mod.browser_download_url}" style="color:var(--on-surface-muted); font-size:11px; text-decoration:underline; margin-left:auto;" onclick="event.stopPropagation();">Direct Link</a>`
+                                    }
                                 </div>
                                 <div class="module-filename">${mod.name}</div>
                             </div>
@@ -673,7 +901,7 @@
             }
             
             document.getElementById('loading').style.display = 'none';
-            listEl.style.display = 'block'; // Change from flex to block for standard stacking
+            listEl.style.display = 'block';
             updateBtn(null);
         }
 
@@ -693,10 +921,10 @@
             const btn = document.getElementById('installBtn');
             if (checkedCount > 0) {
                 btn.disabled = false;
-                btn.innerText = `Patch & Install (${checkedCount}) Modules`;
+                btn.innerText = `Flash (${checkedCount}) Root Module${checkedCount > 1 ? 's' : ''}`;
             } else {
                 btn.disabled = true;
-                btn.innerText = "Select Modules to Flash";
+                btn.innerText = "Select Root Modules to Flash";
             }
         }
 
@@ -806,6 +1034,23 @@
                     }
                     if (data.time) {
                         document.getElementById('updateTime').value = data.time;
+                    }
+                    if (data.device_abi && data.device_abi !== 'unknown') {
+                        deviceAbi = data.device_abi;
+                        deviceModel = data.device_model || 'Android Device';
+                        
+                        const badge = document.getElementById('deviceInfoBadge');
+                        if (badge) {
+                            badge.textContent = `📱 ${deviceModel} (${deviceAbi})`;
+                            badge.style.display = 'inline-block';
+                        }
+                        const chip = document.getElementById('chipDeviceFilter');
+                        if (chip) {
+                            chip.textContent = `📱 For This Device (${deviceAbi})`;
+                        }
+                        if (availableModules.length > 0) {
+                            applyFiltersAndRender();
+                        }
                     }
                 }
             } catch (e) { console.error("Could not load config", e); }

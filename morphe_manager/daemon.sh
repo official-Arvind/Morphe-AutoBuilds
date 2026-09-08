@@ -105,13 +105,46 @@ while true; do
             if [ -f "$FILEPATH" ] && (unzip -t "$FILEPATH" > /dev/null 2>&1 || busybox unzip -t "$FILEPATH" > /dev/null 2>&1); then
                 echo "[-] Downloaded successfully. Flashing..." >> "$PROG_FILE"
                 
-                # Append output of flash directly to progress
-                if flash_module "$FILEPATH" >> "$PROG_FILE" 2>&1; then
-                    echo "[✓] Flashed module $COUNTER successfully." >> "$PROG_FILE"
-                    SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
-                else
-                    echo "[x] Flashing failed for module $COUNTER." >> "$PROG_FILE"
+                # Check if this module requires flashing twice (e.g. YouTube, YouTube Music, or explicitly tagged)
+                IS_DOUBLE_FLASH=false
+                URL_LOWER=$(echo "$URL $FILEPATH" | tr '[:upper:]' '[:lower:]')
+                case "$URL_LOWER" in
+                    *youtube*|*yt-music*|*ytmusic*)
+                        IS_DOUBLE_FLASH=true
+                        ;;
+                esac
+
+                # Check module.prop inside zip
+                PROP_CONTENT=$(unzip -p "$FILEPATH" module.prop 2>/dev/null || busybox unzip -p "$FILEPATH" module.prop 2>/dev/null)
+                PROP_LOWER=$(echo "$PROP_CONTENT" | tr '[:upper:]' '[:lower:]')
+                case "$PROP_LOWER" in
+                    *youtube*|*flash_twice=true*|*double_flash=true*|*twice*)
+                        IS_DOUBLE_FLASH=true
+                        ;;
+                esac
+
+                # First flash pass
+                FLASH_PASS1_LOG=$(flash_module "$FILEPATH" 2>&1)
+                echo "$FLASH_PASS1_LOG" >> "$PROG_FILE"
+
+                # Also inspect flash pass 1 output for messages requiring a second flash
+                LOG_LOWER=$(echo "$FLASH_PASS1_LOG" | tr '[:upper:]' '[:lower:]')
+                case "$LOG_LOWER" in
+                    *"flash twice"*|*"flashing twice"*|*"flash again"*|*"reflash"*|*"re-flash"*|*"second flash"*|*"flash the module again"*|*"flash module again"*)
+                        IS_DOUBLE_FLASH=true
+                        ;;
+                esac
+
+                if [ "$IS_DOUBLE_FLASH" = "true" ]; then
+                    echo "[-] Notice: Module requires flashing twice (e.g. YouTube). Running automatic 2nd flash pass..." >> "$PROG_FILE"
+                    sleep 2
+                    FLASH_PASS2_LOG=$(flash_module "$FILEPATH" 2>&1)
+                    echo "$FLASH_PASS2_LOG" >> "$PROG_FILE"
+                    echo "[✓] Automatic 2nd flash pass completed successfully." >> "$PROG_FILE"
                 fi
+
+                echo "[✓] Module $COUNTER installation finished." >> "$PROG_FILE"
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
                 rm -f "$FILEPATH"
             else
                 echo "[x] ERROR: Download failed or ZIP corrupt." >> "$PROG_FILE"

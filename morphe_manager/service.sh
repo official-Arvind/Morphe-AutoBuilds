@@ -38,18 +38,35 @@ if ! pgrep -f "$MODDIR/daemon.sh" >/dev/null 2>&1; then
     sh $MODDIR/daemon.sh &
 fi
 
+flash_module() {
+    local ZIP="$1"
+    for p in "/data/adb/magisk/magisk" "/sbin/magisk" "/system/bin/magisk" "/system/xbin/magisk"; do
+        if [ -f "$p" ] && [ -x "$p" ]; then "$p" --install-module "$ZIP"; return $?; fi
+    done
+    for p in "/data/adb/ksu/bin/ksud" "/data/adb/ksu/ksud" "/system/bin/ksud" "/sbin/ksud"; do
+        if [ -f "$p" ] && [ -x "$p" ]; then "$p" module install "$ZIP"; return $?; fi
+    done
+    for p in "/data/adb/ap/bin/apatch" "/data/adb/ap/bin/apd" "/data/adb/apatch/apatch" "/data/adb/apatch/apd"; do
+        if [ -f "$p" ] && [ -x "$p" ]; then "$p" module install "$ZIP"; return $?; fi
+    done
+    if command -v magisk >/dev/null 2>&1; then magisk --install-module "$ZIP"; return $?; fi
+    if command -v ksud >/dev/null 2>&1; then ksud module install "$ZIP"; return $?; fi
+    if command -v apatch >/dev/null 2>&1; then apatch module install "$ZIP"; return $?; fi
+    return 1
+}
+
 # Check if we are in the middle of a double-flash operation
 if [ -f "$STATE_FILE" ]; then
     # Give the system 10 seconds to fully boot up services
     sleep 10
     
-    # Optional: Trigger an Android Toast Notification (requires an app or tricky command, fallback to log)
+    # Optional: Trigger an Android Toast Notification
     cmd notification post -t 'Morphe Manager' 'Flashing remaining modules...' || true
     
     # Read the pending zip paths
     while IFS= read -r PENDING_ZIP; do
         if [ -f "$PENDING_ZIP" ]; then
-            magisk --install-module "$PENDING_ZIP"
+            flash_module "$PENDING_ZIP"
             rm -f "$PENDING_ZIP"
         fi
     done < "$STATE_FILE"

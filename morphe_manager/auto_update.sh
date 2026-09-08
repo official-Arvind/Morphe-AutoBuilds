@@ -129,15 +129,31 @@ while true; do
                             
                             if [ -f "$TMP_DIR/zip_list.txt" ]; then
                                 STATE_FILE="/data/adb/morphe_state.txt"
-                                FIRST=true
                                 while IFS= read -r ZIP; do
-                                    if $FIRST; then
-                                        flash_module "$ZIP"
-                                        rm -f "$ZIP"
-                                        FIRST=false
-                                    else
-                                        echo "$ZIP" >> "$STATE_FILE"
+                                    [ -f "$ZIP" ] || continue
+                                    IS_DOUBLE_FLASH=false
+                                    ZIP_LOWER=$(echo "$ZIP" | tr '[:upper:]' '[:lower:]')
+                                    case "$ZIP_LOWER" in
+                                        *youtube*|*yt-music*|*ytmusic*) IS_DOUBLE_FLASH=true ;;
+                                    esac
+
+                                    PROP_CONTENT=$(unzip -p "$ZIP" module.prop 2>/dev/null || busybox unzip -p "$ZIP" module.prop 2>/dev/null)
+                                    case "$(echo "$PROP_CONTENT" | tr '[:upper:]' '[:lower:]')" in
+                                        *youtube*|*flash_twice=true*|*double_flash=true*|*twice*) IS_DOUBLE_FLASH=true ;;
+                                    esac
+
+                                    FLASH_OUT=$(flash_module "$ZIP" 2>&1)
+                                    case "$(echo "$FLASH_OUT" | tr '[:upper:]' '[:lower:]')" in
+                                        *"flash twice"*|*"flashing twice"*|*"flash again"*|*"reflash"*|*"re-flash"*|*"second flash"*|*"flash the module again"*|*"flash module again"*)
+                                            IS_DOUBLE_FLASH=true
+                                            ;;
+                                    esac
+
+                                    if [ "$IS_DOUBLE_FLASH" = "true" ]; then
+                                        sleep 2
+                                        flash_module "$ZIP" >/dev/null 2>&1
                                     fi
+                                    rm -f "$ZIP"
                                 done < "$TMP_DIR/zip_list.txt"
                                 
                                 # Reboot system
