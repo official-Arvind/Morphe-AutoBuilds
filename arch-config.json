@@ -1,22 +1,37 @@
 [
   {
+    "app_name": "tiktok",
+    "source": "icysymmetra",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "youtube",
+    "source": "morphe",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
     "app_name": "youtube-music",
     "source": "morphe",
     "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   },
   {
-    "app_name": "google-photos",
-    "source": "rookie",
+    "app_name": "reddit",
+    "source": "morphe",
     "arches": [
-      "universal"
-    ]
-  },
-  {
-    "app_name": "cake",
-    "source": "custom-patches",
-    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   },
@@ -24,13 +39,800 @@
     "app_name": "instagram",
     "source": "piko",
     "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   },
   {
-    "app_name": "phone",
-    "source": "taknok",
+    "app_name": "pinterest",
+    "source": "adobo",
     "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "soundcloud",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "lyfta",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "camscanner",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "macrofactor",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "macrofactor-workout",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "mirinae",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "niagara",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "lightroom",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "pydroid",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "snorelab",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "ventusky",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "xodo",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "xrecorder",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "google-photos",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "disney-plus",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "duolingo",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "google-news",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "messenger",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "photomath",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "pixiv",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "prime-video",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "proton-mail",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "proton-vpn",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "meme",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "aiocal",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "fotmob",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "hellochinese",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "nomone",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "wallcraft",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "bussu",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "number",
+    "source": "revanced-kitadai31",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "pandora",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "mimo",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "icon-packer",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "rar",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "strava",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "tumblr",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "threads",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "crunchyroll",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "tasker",
+    "source": "dropped",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "icon-pack-studio",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "my-expenses",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "avocards",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "cake",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "eggbun",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "lingory",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "teuida",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "sofascore",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "ttmik-stories",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "windy",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "calistree",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "webster",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "chargeprice",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "mapy",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "telegram",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "park4night",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "komoot",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "hevy",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "geocaching",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "nova",
+    "source": "dropped",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "earphone",
+    "source": "tosox",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "flatastic",
+    "source": "tosox",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "kicker",
+    "source": "tosox",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "ticktick",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "crex",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "documentscanner",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "eyecon",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "fing",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "lumina",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "mark",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "starsense",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "prompter",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "macrodroid",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "alarmo",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "vn",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "splitwise",
+    "source": "burgers",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "trakt",
+    "source": "tosox",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "letterboxd",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "kakaotalk",
+    "source": "ample-dev",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "mladinska",
+    "source": "blazskufca",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "fxfile",
+    "source": "dropped",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "myfitnesspal",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "smart_launcher",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "podcast",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "solid",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "wps-office",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "ibs_paint",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   },
@@ -38,13 +840,224 @@
     "app_name": "pokecardex",
     "source": "almewty",
     "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   },
   {
-    "app_name": "messenger",
+    "app_name": "gamehub",
+    "source": "liaralabs",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "dialer",
+    "source": "taknok",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "windscribe",
+    "source": "rushiranpise-dev",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "anytracker",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "autosync",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "backdrop",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "bilibili",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "busuu",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "chess",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "dailypay",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "debridstream",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "facebook",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "guess-the-country",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "kustom",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "kustom-widget",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "netwall",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "nfctools",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "phone",
+    "source": "rookie",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "spotify",
     "source": "revanced",
     "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "transit",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "truecaller",
+    "source": "paresh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "twitch",
+    "source": "brosssh",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "viber",
+    "source": "Hoo",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "universal"
+    ]
+  },
+  {
+    "app_name": "x",
+    "source": "piko",
+    "arches": [
+      "arm64-v8a",
+      "armeabi-v7a",
       "universal"
     ]
   }

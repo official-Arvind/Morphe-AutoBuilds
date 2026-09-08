@@ -3,22 +3,40 @@ MODDIR=${0%/*}
 
 # Set up bundled busybox
 ARCH=$(getprop ro.product.cpu.abi)
-if [ "$ARCH" = "arm64-v8a" ]; then
-    cp $MODDIR/bin/busybox-arm64 $MODDIR/bin/busybox
-else
-    cp $MODDIR/bin/busybox-arm $MODDIR/bin/busybox
+if [ -f "$MODDIR/bin/busybox-arm64" ] && [ "$ARCH" = "arm64-v8a" ]; then
+    cp "$MODDIR/bin/busybox-arm64" "$MODDIR/bin/busybox" 2>/dev/null || true
+elif [ -f "$MODDIR/bin/busybox-arm" ]; then
+    cp "$MODDIR/bin/busybox-arm" "$MODDIR/bin/busybox" 2>/dev/null || true
 fi
-chmod 755 $MODDIR/bin/busybox
+[ -f "$MODDIR/bin/busybox" ] && chmod 755 "$MODDIR/bin/busybox" 2>/dev/null || true
+
+# Robust busybox resolution (bundled -> magisk -> ksu -> apatch -> system)
+BUSYBOX=""
+if [ -x "$MODDIR/bin/busybox" ] && "$MODDIR/bin/busybox" true 2>/dev/null; then
+    BUSYBOX="$MODDIR/bin/busybox"
+elif [ -x /data/adb/magisk/busybox ]; then
+    BUSYBOX="/data/adb/magisk/busybox"
+elif [ -x /data/adb/ksu/bin/busybox ]; then
+    BUSYBOX="/data/adb/ksu/bin/busybox"
+elif [ -x /data/adb/ap/bin/busybox ]; then
+    BUSYBOX="/data/adb/ap/bin/busybox"
+elif command -v busybox >/dev/null 2>&1; then
+    BUSYBOX="$(command -v busybox)"
+fi
 
 export PATH="$MODDIR/bin:/sbin:/system/sbin:/system/bin:/system/xbin:/data/adb/magisk:/data/adb/ksu:/data/adb/ksud:/data/adb/apatch:$PATH"
 
-MODDIR=${0%/*}
 STATE_FILE="/data/adb/morphe_state.txt"
 
-# Start Auto-Update Daemon in the background
-sh $MODDIR/auto_update.sh &
-# Start IPC daemon for WebUI flashing
-sh $MODDIR/daemon.sh &
+# Start Auto-Update Daemon in the background if not running
+if ! pgrep -f "$MODDIR/auto_update.sh" >/dev/null 2>&1; then
+    sh $MODDIR/auto_update.sh &
+fi
+
+# Start IPC daemon for WebUI flashing if not running
+if ! pgrep -f "$MODDIR/daemon.sh" >/dev/null 2>&1; then
+    sh $MODDIR/daemon.sh &
+fi
 
 # Check if we are in the middle of a double-flash operation
 if [ -f "$STATE_FILE" ]; then
@@ -46,4 +64,8 @@ fi
 
 # Normal boot: Start the web UI server on port 8080 serving the www folder
 chmod -R 755 $MODDIR/www/cgi-bin 2>/dev/null
-$MODDIR/bin/busybox httpd -p 8080 -h $MODDIR/www
+if [ -n "$BUSYBOX" ]; then
+    if ! pgrep -f "httpd.*8080" >/dev/null 2>&1; then
+        $BUSYBOX httpd -p 8080 -h $MODDIR/www
+    fi
+fi

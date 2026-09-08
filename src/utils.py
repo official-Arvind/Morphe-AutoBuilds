@@ -50,43 +50,40 @@ def find_file(files: list[Path], prefix: str = None, suffix: str = None, contain
         exclude = []
     
     for file in files:
+        if not file.is_file() or file.stat().st_size == 0:
+            continue
         # Skip excluded patterns
         if any(excl.lower() in file.name.lower() for excl in exclude):
-            continue
-        if file.stat().st_size == 0:
             continue
             
         # Check all criteria
         matches = True
-        
         if prefix and not file.name.startswith(prefix):
             matches = False
-            
         if suffix:
             suff_tuple = tuple(suffix) if isinstance(suffix, (list, tuple)) else suffix
             if not file.name.endswith(suff_tuple):
                 matches = False
-            
         if contains and contains.lower() not in file.name.lower():
             matches = False
             
         if matches:
             return file
     
-    # If not found with exclude, try without exclude (for fallback)
+    # If not found with exclude, try without exclude only if file is non-empty
     if exclude:
         for file in files:
+            if not file.is_file() or file.stat().st_size == 0:
+                continue
             matches = True
-            
             if prefix and not file.name.startswith(prefix):
                 matches = False
-                
-            if suffix and not file.name.endswith(suffix):
-                matches = False
-                
+            if suffix:
+                suff_tuple = tuple(suffix) if isinstance(suffix, (list, tuple)) else suffix
+                if not file.name.endswith(suff_tuple):
+                    matches = False
             if contains and contains.lower() not in file.name.lower():
                 matches = False
-                
             if matches:
                 return file
     
@@ -95,12 +92,19 @@ def find_file(files: list[Path], prefix: str = None, suffix: str = None, contain
 def find_apksigner() -> str | None:
     on_path = shutil.which("apksigner")
     if on_path:
+        p_path = Path(on_path)
+        if p_path.suffix == ".jar":
+            return str(p_path)
+        jar_candidate = p_path.parent / "lib" / "apksigner.jar"
+        if jar_candidate.exists():
+            return str(jar_candidate)
         return on_path
 
     sdk_roots = [
         "/usr/local/lib/android/sdk",  # GitHub Actions runner default
         os.environ.get("ANDROID_HOME"),
         os.environ.get("ANDROID_SDK_ROOT"),
+        str(Path.home() / "AppData" / "Local" / "Android" / "Sdk"),
     ]
 
     for root in sdk_roots:
@@ -111,6 +115,12 @@ def find_apksigner() -> str | None:
             continue
         versions = sorted(build_tools_dir.iterdir(), reverse=True)
         for version_dir in versions:
+            jar_path = version_dir / "lib" / "apksigner.jar"
+            if jar_path.exists() and jar_path.is_file():
+                return str(jar_path)
+            jar_path = version_dir / "apksigner.jar"
+            if jar_path.exists() and jar_path.is_file():
+                return str(jar_path)
             apksigner_path = version_dir / "apksigner"
             if apksigner_path.exists() and apksigner_path.is_file():
                 return str(apksigner_path)
@@ -610,8 +620,23 @@ def check_apk_integrity(apk_path: Path) -> bool:
 
 
 def find_cli() -> Path | None:
-    return find_file(list(Path('.').glob('*.jar')), contains='cli')
+    jar_files = list(Path('.').glob('*.jar'))
+    # Match revanced-cli, morphe-cli, morphe-desktop, or any CLI jar
+    cli = find_file(jar_files, contains='cli', exclude=['patch', 'integrat'])
+    if not cli:
+        cli = find_file(jar_files, contains='desktop', exclude=['patch', 'integrat'])
+    if not cli:
+        cli = find_file(jar_files, contains='morphe', exclude=['patch', 'integrat'])
+    return cli
 
 def find_patches() -> Path | None:
     files = list(Path('.').glob('*.jar')) + list(Path('.').glob('*.mpp')) + list(Path('.').glob('*.rvp'))
-    return find_file(files, contains='patches')
+    # Match patch jar or bundle, excluding CLI or desktop jars
+    p = find_file(files, contains='patch', exclude=['cli', 'desktop'])
+    if p:
+        return p
+    # Fallback to any valid .mpp or .rvp file
+    mpp_or_rvp = [f for f in files if f.suffix.lower() in ('.mpp', '.rvp') and f.stat().st_size > 0]
+    if mpp_or_rvp:
+        return mpp_or_rvp[0]
+    return None

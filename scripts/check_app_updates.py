@@ -96,7 +96,7 @@ def load_arch_config() -> Dict[Tuple[str, str], List[str]]:
     with ARCH_CONFIG.open("r", encoding="utf-8") as f:
         data = json.load(f)
     return {
-        (e["app_name"], e["source"]): e.get("arches", ["universal"])
+        (e["app_name"], e["source"]): e.get("arches", ["arm64-v8a", "armeabi-v7a", "universal"])
         for e in data
     }
 
@@ -738,7 +738,7 @@ def build_full_matrix() -> List[dict]:
         src = entry.get("source")
         if not app or not src:
             continue
-        arches = arch_map.get((app, src), ["universal"])
+        arches = arch_map.get((app, src), ["arm64-v8a", "armeabi-v7a", "universal"])
         for arch in arches:
             key = (app, src, arch)
             if key in seen:

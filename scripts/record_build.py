@@ -67,7 +67,7 @@ def extract_version_from_filename(apk_name: str) -> str:
     """
     if not apk_name:
         return ""
-    stem = apk_name[:-4] if apk_name.lower().endswith(".apk") else apk_name
+    stem = apk_name[:-4] if apk_name.lower().endswith((".apk", ".zip")) else apk_name
     # finditer() scans left-to-right; take the last match so that, if a name
     # ever contained two dotted "-v" tokens, the trailing version wins. The
     # dotted-shape requirement is what actually excludes arch tokens.

@@ -177,10 +177,6 @@ def download_platform(
         platform_module = globals()[platform]
 
         # Candidate versions (highest -> lowest) for universal robustness:
-        # - If config pins a version: only try that.
-        # - Else if override provided (retry path): try only that.
-        # - Else ask the patching CLI for compatible versions and try those.
-        # - If none returned: fall back to latest available from the store.
         pinned = (config.get("version") or "").strip()
         if override_version:
             candidates = [override_version]
@@ -195,11 +191,22 @@ def download_platform(
             except Exception as e:
                 logging.debug(f"Could not get latest version for {app_name} on {platform}: {e}")
 
+        # Try arch first, fallback to universal
+        arches_to_check = [arch] if (arch and arch != "universal") else ["universal"]
+        if "universal" not in arches_to_check:
+            arches_to_check.append("universal")
+
         last_error: Exception | None = None
         for version in candidates:
             if not version:
                 continue
-            download_link = platform_module.get_download_link(version, app_name, config)
+            download_link = None
+            for try_arch in arches_to_check:
+                config['arch'] = try_arch
+                download_link = platform_module.get_download_link(version, app_name, config)
+                if download_link:
+                    break
+
             if not download_link:
                 last_error = ValueError(f"No download link found for {app_name} version {version}")
                 continue

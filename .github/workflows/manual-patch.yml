@@ -26,10 +26,11 @@ on:
         required: false
         type: choice
         options:
+          - all
           - arm64-v8a
           - armeabi-v7a
           - universal
-        default: 'universal'
+        default: 'all'
       replace_in_release:
         description: 'Replace APK in existing release'
         required: true
@@ -64,10 +65,10 @@ jobs:
               python -c "
               import json, sys, os
               with open('$config_file', 'r') as f:
-                  config = json.load(f)
+                config = json.load(f)
               config['version'] = '${{ inputs.version }}'
               with open('$config_file', 'w') as f:
-                  json.dump(config, f, indent=2)
+                json.dump(config, f, indent=2)
               "
               echo "Updated: $config_file"
               break
@@ -85,7 +86,7 @@ jobs:
           pip install requests beautifulsoup4
       
       - name: Setup Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'

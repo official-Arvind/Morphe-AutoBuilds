@@ -256,9 +256,9 @@ def run_build(app_name: str, source: str, arch: str = "universal", is_root: bool
             input_apk.unlink(missing_ok=True)
 
             if is_root:
-                signed_apk = Path(f"{app_name}-{source}-root-universal-v{version}.apk")
+                signed_apk = Path(f"{app_name}-{source}-root-{arch}-v{version}.apk")
             else:
-                signed_apk = Path(f"{app_name}-{source}-nonroot-universal-v{version}.apk")
+                signed_apk = Path(f"{app_name}-{source}-nonroot-{arch}-v{version}.apk")
 
             apksigner = utils.find_apksigner()
             if not apksigner:
@@ -301,11 +301,15 @@ def main():
             arch_config = json.load(f)
         
         # Find arches for this app
-        arches = [(getenv("ARCH") or "universal").strip()]
-        for config in arch_config:
-            if not getenv("ARCH") and config["app_name"] == app_name and config["source"] == source:
-                arches = config["arches"]
-                break
+        env_arch = (getenv("ARCH") or "").strip()
+        if env_arch and env_arch.lower() != "all":
+            arches = [env_arch]
+        else:
+            arches = ["arm64-v8a", "armeabi-v7a", "universal"]
+            for config in arch_config:
+                if config["app_name"] == app_name and config["source"] == source:
+                    arches = config.get("arches", arches)
+                    break
         
         # Build for each architecture
         built_apks = []

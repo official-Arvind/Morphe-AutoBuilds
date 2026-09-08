@@ -15,44 +15,6 @@ on:
     - cron: '0 6 * * *'  # Daily at 6 AM UTC
 
 jobs:
-  download-tools:
-    name: Download Morphe Tools
-    runs-on: ubuntu-latest
-    if: ${{ false }}
-
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.cache-key }}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-      
-      - name: Download Morphe Tools
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          mkdir -p tools
-          curl -L "https://github.com/revanced/revanced-cli/releases/latest/download/revanced-cli-all.jar" -o tools/revanced-cli.jar
-          curl -L "https://github.com/revanced/revanced-patches/releases/latest/download/patches.jar" -o tools/patches.jar
-          curl -L "https://github.com/revanced/revanced-integrations/releases/latest/download/app-release-unsigned.apk" -o tools/integrations.apk
-      
-      - name: Cache Tools
-        uses: actions/cache@v4
-        id: cache-tools
-        with:
-          path: tools/
-          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
-      
-      - name: Generate Cache Key
-        id: cache-key
-        run: echo "cache-key=${{ steps.cache-tools.outputs.cache-key || 'no-cache' }}" >> $GITHUB_OUTPUT
-
   check-updates:
     name: Check for Updates
     runs-on: ubuntu-latest
@@ -160,12 +122,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Restore Cached Tools
-        uses: actions/cache@v4
-        with:
-          path: tools/
-          key: revanced-tools-${{ hashFiles('patch-config.json', 'arch-config.json') }}
-
       - name: Install Python
         uses: actions/setup-python@v5
         with:
@@ -177,7 +133,7 @@ jobs:
           pip install requests beautifulsoup4
 
       - name: Setup Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
@@ -203,7 +159,7 @@ jobs:
         run: |
           mkdir -p build_records
           # Record every produced APK so manifest can map (app, source, arch) -> filename
-          for apk in *.apk; do
+          for apk in *.apk *.zip; do
             [ -e "$apk" ] || continue
             # record_build.py now detects arch from filename automatically
             APK_PATH="$apk" python scripts/record_build.py || true
@@ -310,6 +266,12 @@ jobs:
             cp manifest.json ./release-apks/manifest.json
           fi
 
+      - name: Build Morphe Manager Module
+        if: steps.check-apks.outputs.skip_release == 'false'
+        run: |
+          echo "📦 Packaging Morphe Manager Magisk/KSU Module..."
+          python scripts/package_manager.py --output ./release-apks/morphe-manager.zip --update-json ./release-apks/update.json
+
       - name: Validate GitHub Auth
         if: steps.check-apks.outputs.skip_release == 'false'
         env:
@@ -356,6 +318,9 @@ jobs:
           if [ -f ./release-apks/manifest.json ]; then
             echo "manifest.json" >> current_assets.txt
           fi
+          if [ -f ./release-apks/update.json ]; then
+            echo "update.json" >> current_assets.txt
+          fi
 
 
           sort -u current_assets.txt > release_assets.txt
@@ -387,6 +352,10 @@ jobs:
           if [ -f ./release-apks/manifest.json ]; then
             ASSETS+=( ./release-apks/manifest.json )
             echo "📎 Including manifest.json"
+          fi
+          if [ -f ./release-apks/update.json ]; then
+            ASSETS+=( ./release-apks/update.json )
+            echo "📎 Including update.json"
           fi
 
           if [ "${{ steps.check-release.outputs.release_exists }}" = "true" ]; then

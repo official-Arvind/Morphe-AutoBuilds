@@ -734,6 +734,7 @@
             try {
                 const res = await fetch('/cgi-bin/install.sh', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ urls })
                 });
                 
@@ -820,6 +821,7 @@
             try {
                 const res = await fetch('/cgi-bin/config.sh', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: "set", enabled: enabled.toString(), time: time })
                 });
                 if (res.ok) {

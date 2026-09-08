@@ -6,6 +6,10 @@ package.json
 dist/
 *.zip
 *.apk
+*.jar
+*.mpp
+*.rvp
+morphe-data/
 
 # Temporary files and scripts
 busybox_src/

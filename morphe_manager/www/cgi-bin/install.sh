@@ -4,8 +4,13 @@ export PATH="/data/adb/modules/morphe_manager/bin:/sbin:/system/sbin:/system/bin
 echo "Content-type: text/plain"
 echo ""
 
-read -r POST_DATA
-URLS=$(echo "$POST_DATA" | grep -o '"https://[^"]*"' | sed 's/"//g')
+if [ -n "$CONTENT_LENGTH" ] && [ "$CONTENT_LENGTH" -gt 0 ] 2>/dev/null; then
+    POST_DATA=$(head -c "$CONTENT_LENGTH")
+else
+    read -r POST_DATA
+fi
+POST_DATA=$(echo "$POST_DATA" | tr -d '\\')
+URLS=$(echo "$POST_DATA" | tr -s '",[]{} \t\r\n' '\n' | grep '^https://')
 
 TMP_DIR="/data/local/tmp/morphe_flasher"
 REQ_FILE="$TMP_DIR/request.txt"
